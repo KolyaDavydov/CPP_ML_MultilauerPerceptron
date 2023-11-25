@@ -1,13 +1,8 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef VIEW_H
+#define VIEW_H
 
-#include <QCloseEvent>
-#include <QColor>
-#include <QColorDialog>
 #include <QFileDialog>
 #include <QMainWindow>
-#include <QThread>
-#include <QTime>
 
 #include "../controller/controller.h"
 
@@ -31,6 +26,7 @@ class MlpView : public QMainWindow {
   void OpenDataset();
   //  void OpenBmp();
   void TrainModel();
+  void TestModel();
 
  private:
   Ui::MainWindow *ui_;
@@ -39,4 +35,4 @@ class MlpView : public QMainWindow {
 };
 }  // namespace s21
 
-#endif  // MAINWINDOW_H
+#endif  // VIEW_H

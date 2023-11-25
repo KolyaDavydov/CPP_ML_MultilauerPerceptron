@@ -24,6 +24,8 @@ class MlpController {
     return model_->getDatasetLoaded();
   }
 
+  bool testModel(int test_part) { return model_->testModel(test_part); }
+
  private:
   MlpModel *model_;
 };

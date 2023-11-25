@@ -130,6 +130,21 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
   return true;
 }
 
+bool MlpModel::testModel(int test_part) {
+  bool result = false;
+  if (!is_dataset_loaded_) {
+    cout << "Dataset not loaded" << endl;
+  } else if (!is_valid_) {
+    cout << "Model not loaded" << endl;
+  } else if (test_part == 0) {
+    cout << "Nothing to test, test part ==0" << endl;
+  } else {
+    test(net_, test_part);
+    result = true;
+  }
+  return result;
+}
+
 void MlpModel::train(NeuralNetwork &net, int epoch) {
   double cost = 0;
   int serial = 0, success = 0;
@@ -150,11 +165,11 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
   // net.save("params.txt");
 }
 
-void MlpModel::test(NeuralNetwork &net) {
+void MlpModel::test(NeuralNetwork &net, int test_part) {
   double cost = 0;
   int serial = 0, success = 0;
   for (int trial = 0; trial < 3; trial++) {
-    for (size_t n = 0; n < dataset_size_; n++) {
+    for (size_t n = 0; n < dataset_size_ / test_part * 100; n++) {
       if (train(net, dataset_[n].c_str(), ++serial, false)) success++;
       cost += net.mse();
     }

@@ -1,8 +1,6 @@
-#include "mainwindow.h"
+#include "view.h"
 
-#include <iostream>
-
-#include "ui_mainwindow.h"
+#include "ui_view.h"
 
 namespace s21 {
 
@@ -64,6 +62,11 @@ void MlpView::TrainModel() {
   int hiden_layers = ui_->hiden_layers_number->value();
 
   controller.trainModel(epoch, hiden_layers);
+};
+
+void MlpView::TestModel() {
+  int test_part = ui_->test_part->value();
+  controller.testModel(test_part);
 };
 
 }  // namespace s21

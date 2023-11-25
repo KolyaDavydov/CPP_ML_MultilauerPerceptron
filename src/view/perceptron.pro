@@ -17,17 +17,16 @@ SOURCES += \
     ../model/model.cc \
     ../model/neural_network.cc \
     main.cc \
-    mainwindow.cc
+    view.cc
 
 HEADERS += \
     ../model/model.h \
     ../controller/controller.h \
     ../model/neural_network.h \
-    mainwindow.h
+    view.h
 
 FORMS += \
-    mainwindow.ui
-include (../3rdParty/gifimage/qtgifimage.pri)
+    view.ui
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

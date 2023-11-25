@@ -18,7 +18,8 @@ class MlpModel {
   bool getDatasetLoaded();
   bool train(NeuralNetwork &net, std::string line, int serial, bool testing);
   void train(NeuralNetwork &net, int epoch);
-  void test(NeuralNetwork &net);
+  void test(NeuralNetwork &net, int test_part);
+  bool testModel(int test_part);
   bool trainModel(int epoch, int hiden_layers);
   void evaluate(NeuralNetwork &net);
   size_t getDatasetSize(std::string filepath);
@@ -27,8 +28,8 @@ class MlpModel {
   std::ifstream file_{};
   size_t dataset_size_;
   NeuralNetwork net_{};
-  bool is_valid_;
-  bool is_dataset_loaded_;
+  bool is_valid_ = false;
+  bool is_dataset_loaded_ = false;
   std::vector<std::string> dataset_;
   void readLetter(const std::string line, int &desired, RowVector *&data);
   void Close() {
