@@ -16,9 +16,11 @@ namespace s21 {
  * Если Файла нет или ошибка чтения, то 'is_valid_' == 1
  */
 bool MlpModel::openModel(std::string filename) {
+  is_valid_ = false;
   file_.open(filename);
   if (file_.is_open()) {
     net_.load(filename.c_str());
+    is_valid_ = true;
   } else {
     is_valid_ = false;
   }
@@ -121,7 +123,7 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
     default:
       init_vector = {28 * 28, 128, 64, 48, 27};
   }
-  net_.init(init_vector, 0.05);
+  net_.init(init_vector, 0.02);
   // 28 * 28, 128, 64, 48, 26}, 0.05  - 85%
   // 28 * 28, 128, 64, 48, 32, 26}, 0.05  - 81%
   // 28 * 28, 128, 100, 64, 48, 32, 26}, 0.05 - 81%
@@ -155,12 +157,14 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
       cost += net.mse();
     }
   }
+  double error = (double)(serial - success) / serial * 100;
   cout << "TRAINING:" << endl;
   cout << "cost\t" << cost / (serial * 2) << endl;
   cout << "success\t" << success << endl;
   cout << "fail\t" << serial - success << endl;
-  cout << "error\t" << (double)(serial - success) / serial * 100 << "%" << endl;
+  cout << "error\t" << error << "%" << endl;
   cout << endl;
+  if (error < 30) is_valid_ = true;
 
   // net.save("params.txt");
 }

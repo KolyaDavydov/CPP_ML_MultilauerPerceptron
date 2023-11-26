@@ -26,6 +26,8 @@ void MlpView::SetupButtons() {
   //          SLOT(OpenBmp()));
   connect(ui_->pushButton_train_model, SIGNAL(clicked()), this,
           SLOT(TrainModel()));
+  connect(ui_->pushButton_test_model, SIGNAL(clicked()), this,
+          SLOT(TestModel()));
 }
 
 void MlpView::OpenModel() {
