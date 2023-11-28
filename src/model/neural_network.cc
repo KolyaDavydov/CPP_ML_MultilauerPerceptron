@@ -207,10 +207,11 @@ bool NeuralNetwork::load(const char* filename) {
   init(mArchitecture, mLearningRate);
 
   // read weights
+  name = "";
   getline(file, line, '\n');
   stringstream we(line);
   getline(we, name, ':');
-  if (!name.compare("weights")) return false;
+  if (name != "weights") return false;
 
   string matrix;
   for (size_t i = 0; i < mArchitecture.size(); i++)

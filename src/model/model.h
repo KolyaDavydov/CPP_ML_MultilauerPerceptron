@@ -31,7 +31,7 @@ class MlpModel {
   bool is_valid_ = false;
   bool is_dataset_loaded_ = false;
   std::vector<std::string> dataset_;
-  void readLetter(const std::string line, int &desired, RowVector *&data);
+  void readLetter(const std::string line, int *desired, RowVector *&data);
   void Close() {
     if (file_.is_open()) file_.close();
   };

@@ -45,15 +45,19 @@ size_t GetFileSize(std::string filename) {
 
 void MlpModel::openDataset(std::string filepath) {
   std::string line;
+  dataset_.erase(dataset_.begin(), dataset_.end());
   is_dataset_loaded_ = false;
   dataset_size_ = 0;
   std::ifstream ifs(filepath);
   if (ifs.is_open()) {
     while (std::getline(ifs, line)) {
-      dataset_.push_back(line);
-      dataset_size_++;
+      if (line.length() > 1569) {
+        dataset_.push_back(line);
+        dataset_size_++;
+      }
     }
     is_dataset_loaded_ = true;
+    std::sort(dataset_.begin(), dataset_.end());
   }
 }
 
@@ -61,7 +65,7 @@ bool MlpModel::saveModel(std::string filename) {
   return net_.save(filename.c_str());
 };
 
-void MlpModel::readLetter(const std::string line, int &desired,
+void MlpModel::readLetter(const std::string line, int *desired,
                           RowVector *&data) {
   int width = 28;
   int height = 28;
@@ -71,18 +75,23 @@ void MlpModel::readLetter(const std::string line, int &desired,
   // split CSV by commas
   ss.str(line);
   getline(ss, substring, ',');
-  desired = atoi(substring.c_str());
-  for (int i = 0; i < height * width; i++) {
-    getline(ss, substring, ',');
-    data->coeffRef(0, i) = atof(substring.c_str());
-  }
+  *desired = atoi(substring.c_str()) - 1;
+  for (int y = 0; y < height; y++)
+    for (int x = 0; x < width; x++) {
+      getline(ss, substring, ',');
+      data->coeffRef(0, y * width + x) = atof(substring.c_str());
+    }
+  // for (int i = 0; i < height * width; i++) {
+  //   getline(ss, substring, ',');
+  //   data->coeffRef(0, i) = atof(substring.c_str());
+  // }
 }
 
 bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
                      bool testing) {
   RowVector *input;
   int desired;
-  readLetter(line, desired, input);
+  readLetter(line, &desired, input);
 
   RowVector output(LETTERS);
   for (int c = 0; c < LETTERS; c++)
@@ -123,7 +132,7 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
     default:
       init_vector = {28 * 28, 128, 64, 48, 27};
   }
-  net_.init(init_vector, 0.02);
+  net_.init(init_vector, 0.05);
   // 28 * 28, 128, 64, 48, 26}, 0.05  - 85%
   // 28 * 28, 128, 64, 48, 32, 26}, 0.05  - 81%
   // 28 * 28, 128, 100, 64, 48, 32, 26}, 0.05 - 81%
@@ -172,11 +181,9 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
 void MlpModel::test(NeuralNetwork &net, int test_part) {
   double cost = 0;
   int serial = 0, success = 0;
-  for (int trial = 0; trial < 3; trial++) {
-    for (size_t n = 0; n < dataset_size_ / test_part * 100; n++) {
-      if (train(net, dataset_[n].c_str(), ++serial, false)) success++;
-      cost += net.mse();
-    }
+  for (size_t n = 0; n < dataset_size_ * test_part / 100; n++) {
+    if (train(net, dataset_[n].c_str(), ++serial, true)) success++;
+    cost += net.mse();
   }
   cout << "TESTING:" << endl;
   cout << "cost\t" << cost / (serial * 2) << endl;
