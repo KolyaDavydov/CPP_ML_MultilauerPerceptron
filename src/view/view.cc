@@ -10,6 +10,9 @@ s21::MlpController controller(&model);
 MlpView::MlpView(QWidget *parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow) {
   ui_->setupUi(this);
+  scene = new paintScene();  // Инициализируем графическую сцену
+  ui_->graphicsView->setScene(scene);  // Устанавливаем графическую сцену
+  ui_->graphicsView->setSceneRect(scene->sceneRect());
   SetupButtons();
 }
 
@@ -28,6 +31,8 @@ void MlpView::SetupButtons() {
           SLOT(TrainModel()));
   connect(ui_->pushButton_test_model, SIGNAL(clicked()), this,
           SLOT(TestModel()));
+  connect(ui_->pushButton_clear_paint, SIGNAL(clicked()), this,
+          SLOT(ClearPaint()));
 }
 
 void MlpView::OpenModel() {
@@ -69,6 +74,11 @@ void MlpView::TrainModel() {
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
   controller.testModel(test_part);
+};
+
+void MlpView::ClearPaint() {
+  scene->clear();
+  ui_->graphicsView->setSceneRect(scene->sceneRect());
 };
 
 }  // namespace s21

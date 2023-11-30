@@ -17,12 +17,14 @@ SOURCES += \
     ../model/model.cc \
     ../model/neural_network.cc \
     main.cc \
+    paintscene.cc \
     view.cc
 
 HEADERS += \
     ../model/model.h \
     ../controller/controller.h \
     ../model/neural_network.h \
+    paintscene.h \
     view.h
 
 FORMS += \

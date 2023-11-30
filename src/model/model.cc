@@ -4,7 +4,7 @@
 #define CMD_RESET "\x1b[0m"
 #define CMD_RED "\x1b[31;1m"
 #define CMD_GREEN "\x1b[32;1m"
-#define LETTERS 27
+#define LETTERS 26
 
 namespace s21 {
 
@@ -106,7 +106,7 @@ bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
   double value = 0;
   int actual = net.vote(value);
   cout << serial << ' ' << desired << " >> ";
-  if (desired != actual)  // && desired != 26)  // need to fix
+  if (desired != actual)
     cout << CMD_RED << actual << CMD_RESET " (" << value - net.output(desired)
          << ")" << endl;
   else
@@ -116,21 +116,21 @@ bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
 }
 bool MlpModel::trainModel(int epoch, int hiden_layers) {
   vector<int> init_vector{};
-  switch (hiden_layers) {
+  switch (hiden_layers) {  // количество нейронов подобрано эмпирически
     case 2:
-      init_vector = {28 * 28, 128, 64, 48, 27};
+      init_vector = {28 * 28, 64, 48, LETTERS};
       break;
     case 3:
-      init_vector = {28 * 28, 128, 64, 48, 32, 27};
+      init_vector = {28 * 28, 128, 64, 48, 32, LETTERS};
       break;
     case 4:
-      init_vector = {28 * 28, 128, 100, 64, 48, 32, 27};
+      init_vector = {28 * 28, 128, 100, 64, 48, 32, LETTERS};
       break;
     case 5:
-      init_vector = {28 * 28, 128, 100, 80, 64, 48, 32, 27};
+      init_vector = {28 * 28, 128, 100, 80, 64, 48, 32, LETTERS};
       break;
     default:
-      init_vector = {28 * 28, 128, 64, 48, 27};
+      init_vector = {28 * 28, 128, 64, 48, LETTERS};
   }
   net_.init(init_vector, 0.05);
   // 28 * 28, 128, 64, 48, 26}, 0.05  - 85%
@@ -138,6 +138,7 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
   // 28 * 28, 128, 100, 64, 48, 32, 26}, 0.05 - 81%
   // 28 * 28, 128, 100, 80, 64, 48, 32, 26}, 0.05 - 84%
   train(net_, epoch);
+  evaluate(net_);
   return true;
 }
 
@@ -151,6 +152,7 @@ bool MlpModel::testModel(int test_part) {
     cout << "Nothing to test, test part ==0" << endl;
   } else {
     test(net_, test_part);
+    evaluate(net_);
     result = true;
   }
   return result;
@@ -193,7 +195,7 @@ void MlpModel::test(NeuralNetwork &net, int test_part) {
   cout << endl;
 }
 
-void evaluate(NeuralNetwork &net) {
+void MlpModel::evaluate(NeuralNetwork &net) {
   RowVector *precision, *recall;
   net.confusionMatrix(precision, recall);
 

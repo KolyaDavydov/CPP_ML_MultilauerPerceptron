@@ -266,10 +266,19 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
       <horstretch>0</horstretch>
       <verstretch>0</verstretch>
      </sizepolicy>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>512</width>
+      <height>512</height>
+     </size>
+    </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_train_model">
@@ -339,6 +348,29 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>Recognize</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_clear_paint">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>570</y>
+      <width>101</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+  color: white;
+  background-color: rgb(200, 150, 50);
+  border: 1px solid black;
+}
+QPushButton:pressed {
+    background-color: rgb(150, 100, 0);
+}</string>
+    </property>
+    <property name="text">
+     <string>Clear</string>
     </property>
    </widget>
   </widget>
