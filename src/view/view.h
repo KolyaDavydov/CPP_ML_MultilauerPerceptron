@@ -25,7 +25,7 @@ class MlpView : public QMainWindow {
   void OpenModel();
   void SaveModel();
   void OpenDataset();
-  //  void OpenBmp();
+  void OpenBmp();
   void TrainModel();
   void TestModel();
   void ClearPaint();

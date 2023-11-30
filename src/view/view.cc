@@ -1,5 +1,7 @@
 #include "view.h"
 
+#include <iostream>
+
 #include "ui_view.h"
 
 namespace s21 {
@@ -27,8 +29,7 @@ void MlpView::SetupButtons() {
           SLOT(SaveModel()));
   connect(ui_->pushButton_open_dataset, SIGNAL(clicked()), this,
           SLOT(OpenDataset()));
-  //  connect(ui_->pushButton_open_bmp, SIGNAL(clicked()), this,
-  //          SLOT(OpenBmp()));
+  connect(ui_->pushButton_open_bmp, SIGNAL(clicked()), this, SLOT(OpenBmp()));
   connect(ui_->pushButton_train_model, SIGNAL(clicked()), this,
           SLOT(TrainModel()));
   connect(ui_->pushButton_test_model, SIGNAL(clicked()), this,
@@ -39,7 +40,7 @@ void MlpView::SetupButtons() {
 
 void MlpView::OpenModel() {
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть модель"), QDir::homePath(), "М (*.txt)");
+      this, tr("Открыть модель"), QDir::homePath(), "TXT-files (*.txt)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
 
@@ -49,7 +50,7 @@ void MlpView::OpenModel() {
 
 void MlpView::SaveModel() {
   QString file_name = QFileDialog::getSaveFileName(
-      this, tr("Сохранить модель"), QDir::homePath(), "М (*.txt)");
+      this, tr("Сохранить модель"), QDir::homePath(), "TXT-files (*.txt)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
 
@@ -58,11 +59,32 @@ void MlpView::SaveModel() {
 }
 void MlpView::OpenDataset() {
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть датасет"), QDir::homePath(), "М (*.csv)");
+      this, tr("Открыть датасет"), QDir::homePath(), "Datasets (*.csv)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
 
     controller.openDataset(file_name_);
+  }
+}
+
+void MlpView::OpenBmp() {
+  QImage image;
+  QString file_name = QFileDialog::getOpenFileName(
+      this, tr("Открыть датасет"), QDir::homePath(),
+      "BMP-files (*.png)");  // delete PNG
+  if (!file_name.isEmpty() && !file_name.isNull()) {
+    std::string file_name_ = file_name.toStdString();
+    image.load(file_name_.c_str());
+    if (image.height() < 28 || image.width() < 28 || image.height() > 512 ||
+        image.width() > 512)
+      std::cout << "Too small or too large image" << std::endl;
+    else {
+      QImage grayscale = image.convertToFormat(QImage::Format_Mono);
+      QImage small = grayscale.scaled(28, 28, Qt::KeepAspectRatio);
+      scene->clear();
+      scene->addPixmap(QPixmap::fromImage(grayscale));
+      ui_->graphicsView->setScene(scene);
+    }
   }
 }
 
