@@ -13,6 +13,8 @@ MlpView::MlpView(QWidget *parent)
   scene = new paintScene();  // Инициализируем графическую сцену
   ui_->graphicsView->setScene(scene);  // Устанавливаем графическую сцену
   ui_->graphicsView->setSceneRect(scene->sceneRect());
+  scene->setSceneRect(0, 0, ui_->graphicsView->width(),
+                      ui_->graphicsView->height());
   SetupButtons();
 }
 
