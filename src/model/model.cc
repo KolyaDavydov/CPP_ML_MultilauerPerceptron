@@ -105,12 +105,12 @@ bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
 
   double value = 0;
   int actual = net.vote(value);
-  cout << serial << ' ' << char(desired + 64) << " >> ";
+  cout << serial << ' ' << char(desired + 65) << " >> ";
   if (desired != actual)
-    cout << CMD_RED << char(actual + 64) << CMD_RESET " ("
+    cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
          << value - net.output(desired) << ")" << endl;
   else
-    cout << CMD_GREEN << char(actual + 64) << CMD_RESET << endl;
+    cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
 
   return desired == actual;
 }
@@ -124,21 +124,21 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
       init_vector = {28 * 28, 64, 52, 48, LETTERS};
       break;
     case 4:
-      init_vector = {28 * 28, 128, 100, 64, 48, 32, LETTERS};
+      init_vector = {28 * 28, 64, 52, 48, 32, LETTERS};
       break;
     case 5:
-      init_vector = {28 * 28, 128, 100, 80, 64, 48, 32, LETTERS};
+      init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
       break;
     default:
-      init_vector = {28 * 28, 128, 64, 48, LETTERS};
+      init_vector = {28 * 28, 64, 48, LETTERS};
   }
-  net_.init(init_vector, 0.03);
+  net_.init(init_vector, 0.01);
   // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
-  // 28 * 28, 96, 64, 48, 26}, 0.03  2 - 54%
+  // 28 * 28, 96, 64, 48, 26}, 0.01  3 - 68%
   // 28 * 28, 128, 100, 64, 48, 32, 26}, 0.03 - 73%
   // 28 * 28, 128, 100, 80, 64, 48, 32, 26}, 0.05 - 84%
   train(net_, epoch);
-  evaluate(net_);
+  // evaluate(net_);
   return true;
 }
 
