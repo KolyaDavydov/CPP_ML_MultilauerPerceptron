@@ -69,9 +69,11 @@ bool MlpModel::saveModel(std::string filename) {
 /**
  * @brief парсит строку из датасета
  * @param line строка датасета
- * @param desired указатель под каким номером буквы должна быть данная строка (первое число строки)
- * @param data вектор в числовом представлении строки датасета после нормализации (от 0 до 1)
-*/
+ * @param desired указатель под каким номером буквы должна быть данная строка
+ * (первое число строки)
+ * @param data вектор в числовом представлении строки датасета после
+ * нормализации (от 0 до 1)
+ */
 void MlpModel::readLetter(const std::string line, int *desired,
                           RowVector *&data) {
   int width = 28;
@@ -86,7 +88,7 @@ void MlpModel::readLetter(const std::string line, int *desired,
   for (int y = 0; y < height; y++)
     for (int x = 0; x < width; x++) {
       getline(ss, substring, ',');
-      data->coeffRef(0, y * width + x) = atof(substring.c_str())/255;
+      data->coeffRef(0, y * width + x) = atof(substring.c_str()) / 255;
     }
   // for (int i = 0; i < height * width; i++) {
   //   getline(ss, substring, ',');
@@ -99,21 +101,24 @@ void MlpModel::readLetter(const std::string line, int *desired,
  * @param line строка (буква) датасета
  * @param serial номер строки (буквы) датасета
  * @param testing если true - тестируемый датасет, false - тренировочный датасет
- * 
+ *
  * @return true - если строка (буква) успешно прошла тренировку или тетсирование
-*/
+ */
 bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
                      bool testing) {
-  RowVector *input; // указатель на вектор где хранятся числовые значение входных нейронов
-  int desired; // фактическое значение (номер буквы) текущей строки (первое число строки)
+  RowVector *input;  // указатель на вектор где хранятся числовые значение
+                     // входных нейронов
+  int desired;  // фактическое значение (номер буквы) текущей строки (первое
+                // число строки)
   readLetter(line, &desired, input);
 
   // создаем вектор-шаблон длиной 26 (количество букв)
-  // который заподняем нулями, кроме элемента находящегося под индексом фактического значения
+  // который заподняем нулями, кроме элемента находящегося под индексом
+  // фактического значения
   RowVector output(LETTERS);
   for (int c = 0; c < LETTERS; c++)
     output.coeffRef(0, c) = c == desired ? 1 : 0;
-  
+
   if (testing) {
     net.test(*input, output);
     net.evaluate(output);
@@ -123,12 +128,12 @@ bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
 
   double value = 0;
   int actual = net.vote(value);
-  cout << serial << ' ' << desired << " >> ";
+  cout << serial << ' ' << char(desired + 65) << " >> ";
   if (desired != actual)
-    cout << CMD_RED << actual << CMD_RESET " (" << value - net.output(desired)
-         << ")" << endl;
+    cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
+         << value - net.output(desired) << ")" << endl;
   else
-    cout << CMD_GREEN << actual << CMD_RESET << endl;
+    cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
 
   return desired == actual;
 }
@@ -139,22 +144,21 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
       init_vector = {28 * 28, 64, 48, LETTERS};
       break;
     case 3:
-      init_vector = {28 * 28, 128, 64, 48, 32, LETTERS};
+      init_vector = {28 * 28, 64, 52, 48, LETTERS};
       break;
     case 4:
-      init_vector = {28 * 28, 128, 100, 64, 48, 32, LETTERS};
+      init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
       break;
     case 5:
-      init_vector = {28 * 28, 128, 100, 80, 64, 48, 32, LETTERS};
+      init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
       break;
     default:
-      init_vector = {28 * 28, 128, 64, 48, LETTERS};
+      init_vector = {28 * 28, 64, 48, LETTERS};
   }
-  net_.init(init_vector, 0.05);
-  // 28 * 28, 128, 64, 48, 26}, 0.05  - 85%
-  // 28 * 28, 128, 64, 48, 32, 26}, 0.05  - 81%
-  // 28 * 28, 128, 100, 64, 48, 32, 26}, 0.05 - 81%
-  // 28 * 28, 128, 100, 80, 64, 48, 32, 26}, 0.05 - 84%
+  net_.init(init_vector, 0.01);
+  // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
+  // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
+  // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
   train(net_, epoch);
   evaluate(net_);
   return true;
@@ -178,8 +182,8 @@ bool MlpModel::testModel(int test_part) {
 
 void MlpModel::train(NeuralNetwork &net, int epoch) {
   double cost = 0;
-  int serial = 0; // номер строки датасета (буквы)
-  int success = 0; // для каждой строки датасета (буквы) успешное определение 
+  int serial = 0;   // номер строки датасета (буквы)
+  int success = 0;  // для каждой строки датасета (буквы) успешное определение
   // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
     for (size_t n = 0; n < dataset_size_; n++) {
