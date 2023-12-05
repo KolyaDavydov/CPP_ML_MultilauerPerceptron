@@ -28,6 +28,7 @@ class MlpView : public QMainWindow {
   void OpenBmp();
   void TrainModel();
   void TestModel();
+  void RecognizeImage();
   void ClearPaint();
 
  private:

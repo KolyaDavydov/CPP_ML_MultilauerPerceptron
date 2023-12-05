@@ -137,6 +137,40 @@ bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
 
   return desired == actual;
 }
+
+void MlpModel::recognizeImage(std::string letter) {
+  RowVector *input;  // указатель на вектор где хранятся числовые значение
+                     // входных нейронов
+  int desired;  // фактическое значение (номер буквы) текущей строки (первое
+                // число строки)
+  readLetter(letter, &desired, input);
+  if (!is_valid_) {
+    cout << "Model not loaded" << endl;
+  } else {
+    // создаем вектор-шаблон длиной 26 (количество букв)
+    // который заподняем нулями, кроме элемента находящегося под индексом
+    // фактического значения
+    RowVector output(LETTERS);
+    for (int c = 0; c < LETTERS; c++)
+      output.coeffRef(0, c) = c == desired ? 1 : 0;
+
+    net_.test(*input, output);
+    net_.evaluate(output);
+    delete input;
+
+    double value = 0;
+    int actual = net_.vote(value);
+    cout << char(desired + 65) << " >> ";
+    if (desired != actual)
+      cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
+           << value - net_.output(desired) << ")" << endl;
+    else
+      cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
+
+    recognizedLetter_ = actual;
+  }
+}
+
 bool MlpModel::trainModel(int epoch, int hiden_layers) {
   vector<int> init_vector{};
   switch (hiden_layers) {  // количество нейронов подобрано эмпирически

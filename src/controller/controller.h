@@ -23,7 +23,10 @@ class MlpController {
     model_->trainModel(epoch, hiden_layers);
     return model_->getDatasetLoaded();
   }
-
+  char recognizeImage(std::string letter) {
+    model_->recognizeImage(letter);
+    return model_->getRecognized();
+  }
   bool testModel(int test_part) { return model_->testModel(test_part); }
 
  private:

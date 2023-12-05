@@ -22,6 +22,10 @@ class MlpModel {
   bool testModel(int test_part);
   bool trainModel(int epoch, int hiden_layers);
   void evaluate(NeuralNetwork &net);
+  void recognizeImage(std::string letter);
+  char getRecognized() {
+    if (recognizedLetter_) return recognizedLetter_;
+  };
   size_t getDatasetSize(std::string filepath);
 
  private:
@@ -31,6 +35,7 @@ class MlpModel {
   bool is_valid_ = false;
   bool is_dataset_loaded_ = false;
   std::vector<std::string> dataset_;
+  char recognizedLetter_ = 0;
   void readLetter(const std::string line, int *desired, RowVector *&data);
   void Close() {
     if (file_.is_open()) file_.close();
