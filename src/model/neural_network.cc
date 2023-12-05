@@ -134,7 +134,12 @@ void NeuralNetwork::confusionMatrix(RowVector*& precision, RowVector*& recall) {
     double rowSum = 0;
     for (int col = 0; col < cols; col++)
       rowSum += mConfusion->coeffRef(row, col);
-    recall->coeffRef(row) = mConfusion->coeffRef(row, row) / rowSum;
+    if (rowSum == 0) {
+      recall->coeffRef(row) = 0;
+    } else {
+      recall->coeffRef(row) = mConfusion->coeffRef(row, row) / rowSum;
+    }
+    
   }
 
   // convert confusion to percentage
@@ -142,9 +147,15 @@ void NeuralNetwork::confusionMatrix(RowVector*& precision, RowVector*& recall) {
     double rowSum = 0;
     for (int col = 0; col < cols; col++)
       rowSum += mConfusion->coeffRef(row, col);
-    for (int col = 0; col < cols; col++)
-      mConfusion->coeffRef(row, col) =
-          mConfusion->coeffRef(row, col) * 100 / rowSum;
+    if (rowSum == 0) {
+      for (int col = 0; col < cols; col++)
+        mConfusion->coeffRef(row, col) = 0;
+    } else {
+      for (int col = 0; col < cols; col++)
+        mConfusion->coeffRef(row, col) =
+            mConfusion->coeffRef(row, col) * 100 / rowSum;
+    }
+
   }
 }
 

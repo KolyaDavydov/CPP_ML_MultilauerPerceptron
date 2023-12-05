@@ -222,8 +222,16 @@ void MlpModel::evaluate(NeuralNetwork &net) {
   RowVector *precision, *recall;
   net.confusionMatrix(precision, recall);
 
-  double precisionVal = precision->sum() / precision->cols();
-  double recallVal = recall->sum() / recall->cols();
+  int numValues = 0; // количество букв в тестах (может быть не равно 26)
+  for (int i = 0; i < precision->size(); i++) {
+    if (precision->coeffRef(i) != 0)
+      numValues++;
+  }
+
+  // double precisionVal = precision->sum() / precision->cols();
+  // double recallVal = recall->sum() / recall->cols();
+  double precisionVal = precision->sum() / numValues;
+  double recallVal = recall->sum() / numValues;
   double f1score = 2 * precisionVal * recallVal / (precisionVal + recallVal);
 
   cout << "Confusion matrix:" << endl;
