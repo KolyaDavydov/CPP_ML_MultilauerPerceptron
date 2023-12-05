@@ -2,6 +2,7 @@
 #define NEURAL_NETWORK_H
 
 #include <vector>
+#include <cmath>
 
 #include "Eigen/Eigen"
 
