@@ -65,6 +65,12 @@ bool MlpModel::saveModel(std::string filename) {
   return net_.save(filename.c_str());
 };
 
+/**
+ * @brief парсит строку из датасета
+ * @param line строка датасета
+ * @param desired указатель под каким номером буквы должна быть данная строка (первое число строки)
+ * @param data вектор в числовом представлении строки датасета после нормализации (от 0 до 1)
+*/
 void MlpModel::readLetter(const std::string line, int *desired,
                           RowVector *&data) {
   int width = 28;
@@ -86,16 +92,27 @@ void MlpModel::readLetter(const std::string line, int *desired,
   //   data->coeffRef(0, i) = atof(substring.c_str());
   // }
 }
-
+/**
+ * @brief функция тренировки для каждой строки (буквы датасета)
+ * @param net указатель на нейросеть
+ * @param line строка (буква) датасета
+ * @param serial номер строки (буквы) датасета
+ * @param testing если true - тестируемый датасет, false - тренировочный датасет
+ * 
+ * @return true - если строка (буква) успешно прошла тренировку или тетсирование
+*/
 bool MlpModel::train(NeuralNetwork &net, std::string line, int serial,
                      bool testing) {
-  RowVector *input;
-  int desired;
+  RowVector *input; // указатель на вектор где хранятся числовые значение входных нейронов
+  int desired; // фактическое значение (номер буквы) текущей строки (первое число строки)
   readLetter(line, &desired, input);
 
+  // создаем вектор-шаблон длиной 26 (количество букв)
+  // который заподняем нулями, кроме элемента находящегося под индексом фактического значения
   RowVector output(LETTERS);
   for (int c = 0; c < LETTERS; c++)
     output.coeffRef(0, c) = c == desired ? 1 : 0;
+  
   if (testing) {
     net.test(*input, output);
     net.evaluate(output);
@@ -160,7 +177,8 @@ bool MlpModel::testModel(int test_part) {
 
 void MlpModel::train(NeuralNetwork &net, int epoch) {
   double cost = 0;
-  int serial = 0, success = 0;
+  int serial = 0; // номер строки датасета (буквы)
+  int success = 0; // для каждой строки датасета (буквы) успешное определение 
   // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
     for (size_t n = 0; n < dataset_size_; n++) {
