@@ -167,7 +167,7 @@ void MlpModel::recognizeImage(std::string letter) {
     // else
     //   cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
 
-    recognizedLetter_ = actual;
+    recognizedLetter_ = actual + 65;
   }
 }
 
@@ -189,7 +189,7 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
     default:
       init_vector = {28 * 28, 64, 48, LETTERS};
   }
-  net_.init(init_vector, 0.01);
+  net_.init(init_vector, 0.02);
   // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
   // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
   // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%

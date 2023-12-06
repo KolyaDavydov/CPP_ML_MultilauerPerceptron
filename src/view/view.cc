@@ -82,6 +82,19 @@ void MlpView::OpenBmp() {
     else {
       QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
       QImage small = grayscale.scaled(28, 28, Qt::KeepAspectRatio);
+      stringstream letter;
+      letter << "0";
+      for (int x = 0; x < 28; x++) {
+        for (int y = 0; y < 28; y++) {
+          QColor pixColor = grayscale.pixelColor(x, y);
+          int red = pixColor.red();
+          letter << "," << red;
+        }
+      }
+      char recognizedletter = controller.recognizeImage(letter.str());
+      ui_->label_recognized_letter->setText(
+          QString("%1").arg(recognizedletter));
+      ui_->label_recognized_letter->repaint();
       scene->clear();
       scene->addPixmap(QPixmap::fromImage(grayscale));
       ui_->graphicsView->setScene(scene);
@@ -120,7 +133,11 @@ void MlpView::RecognizeImage() {
       letter << "," << red;
     }
   }
-  controller.recognizeImage(letter.str());
+  char recognizedletter = controller.recognizeImage(letter.str());
+  ui_->label_recognized_letter->setText(QString("%1").arg(recognizedletter));
+  ui_->label_recognized_letter->repaint();
+
+  // ui_->label_recognized_letter->setText(recognizedletter);
   // std::cout << letter.str() << endl;
 }
 
