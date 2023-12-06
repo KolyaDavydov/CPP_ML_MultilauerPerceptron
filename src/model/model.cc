@@ -1,5 +1,6 @@
 #include "model.h"
 
+#include <QElapsedTimer>
 #include <iostream>
 #define CMD_RESET "\x1b[0m"
 #define CMD_RED "\x1b[31;1m"
@@ -206,9 +207,13 @@ bool MlpModel::testModel(int test_part) {
   } else if (test_part == 0) {
     cout << "Nothing to test, test part ==0" << endl;
   } else {
+    QElapsedTimer t;
+    t.start();
+
     test(net_, test_part);
     evaluate(net_);
     result = true;
+    std::cout << "Operation in testModel " << t.elapsed() << "ms" << endl;
   }
   return result;
 }
