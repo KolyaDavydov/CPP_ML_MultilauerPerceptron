@@ -153,19 +153,19 @@ void MlpModel::recognizeImage(std::string letter) {
     RowVector output(LETTERS);
     for (int c = 0; c < LETTERS; c++)
       output.coeffRef(0, c) = c == desired ? 1 : 0;
-
     net_.test(*input, output);
     net_.evaluate(output);
     delete input;
 
     double value = 0;
     int actual = net_.vote(value);
-    cout << char(desired + 65) << " >> ";
-    if (desired != actual)
-      cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
-           << value - net_.output(desired) << ")" << endl;
-    else
-      cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
+    cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
+    // cout << char(desired + 65) << " >> ";
+    // if (desired != actual)
+    //   cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
+    //        << value - net_.output(desired) << ")" << endl;
+    // else
+    //   cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
 
     recognizedLetter_ = actual;
   }
@@ -194,7 +194,6 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
   // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
   // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
   train(net_, epoch);
-  evaluate(net_);
   return true;
 }
 

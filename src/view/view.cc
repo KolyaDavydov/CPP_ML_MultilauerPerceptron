@@ -72,8 +72,7 @@ void MlpView::OpenDataset() {
 void MlpView::OpenBmp() {
   QImage image;
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть датасет"), QDir::homePath(),
-      "BMP-files (*.png)");  // delete PNG
+      this, tr("Открыть датасет"), QDir::homePath(), "BMP-files (*.bmp)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
     image.load(file_name_.c_str());
@@ -106,7 +105,7 @@ void MlpView::RecognizeImage() {
   QPixmap pixMap =
       ui_->graphicsView->grab(ui_->graphicsView->sceneRect().toRect());
 
-  // pixMap.scaled(512, 512).save("./file_pix.bmp");
+  // pixMap.scaled(28, 28).save("/Users/nohoteth/mlp/file_pix.bmp");
   QImage image = pixMap.scaled(28, 28).toImage();
   // QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
   stringstream letter;
