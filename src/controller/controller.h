@@ -39,6 +39,8 @@ class MlpController {
     return model_->getTestResults();
   }
 
+  std::vector<double> getTrainErrors() { return model_->getTrainErrors(); };
+
  private:
   MlpModel *model_;
 };

@@ -255,7 +255,7 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
       if (train(net, dataset_[n].c_str(), ++serial, false)) success++;
       cost += net.mse();
     }
-    test(net_, 100);
+    train_errors_.push_back((double)(serial - success) / serial * 100);
   }
   double error = (double)(serial - success) / serial * 100;
   cout << "TRAINING:" << endl;

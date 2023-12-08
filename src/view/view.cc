@@ -127,17 +127,27 @@ void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.trainModel(epoch, hiden_layers);
+  int count_epoch = 1;
+  while (count_epoch != epoch) {
+    std::vector<double> train_errors = controller.getTrainErrors();
+    ui_->label_test_epoch_val->setText(QString("%1").arg(count_epoch));
+    ui_->label_test_error_val->setText(
+        QString("%1").arg(train_errors[train_errors.size()]));
+    ui_->label_test_error_val->repaint();
+    count_epoch = train_errors.size();
+    delay(500);
+  }
 };
 
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
   testResults testRes = controller.testModel(test_part);
   QString res =
-      "Test results\nAccuracy: " + QString::number(testRes.accuracy, 'f', 1) +
-      " %\nPrecision: " + QString::number(testRes.precision * 100, 'f', 1) +
-      " %\nRecall: " + QString::number(testRes.recall * 100, 'f', 1) +
-      " %\nF-measure: " + QString::number(testRes.fmeasure * 100, 'f', 1) +
-      " %\nRunning time: " + QString::number(testRes.runtime / 1000, 'f', 1) +
+      "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f', 1) +
+      " %\nPrecision:\t" + QString::number(testRes.precision * 100, 'f', 1) +
+      " %\nRecall:\t" + QString::number(testRes.recall * 100, 'f', 1) +
+      " %\nF-measure:\t" + QString::number(testRes.fmeasure * 100, 'f', 1) +
+      " %\nTest time:\t" + QString::number(testRes.runtime / 1000, 'f', 1) +
       " s";
   QMessageBox msgBox;
   msgBox.setText(res);
@@ -166,9 +176,6 @@ void MlpView::RecognizeImage() {
   char recognizedletter = controller.recognizeImage(letter.str());
   ui_->label_recognized_letter->setText(QString("%1").arg(recognizedletter));
   ui_->label_recognized_letter->repaint();
-
-  // ui_->label_recognized_letter->setText(recognizedletter);
-  // std::cout << letter.str() << endl;
 }
 
 void MlpView::ClearPaint() {

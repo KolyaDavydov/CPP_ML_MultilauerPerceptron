@@ -26,6 +26,7 @@ class MlpModel {
   bool getModelValid();
   bool getDatasetLoaded();
   bool getTestDatasetLoaded();
+  std::vector<double> getTrainErrors() { return train_errors_; };
   testResults getTestResults();
   bool train(NeuralNetwork &net, std::string line, int serial, bool testing);
   void train(NeuralNetwork &net, int epoch);
@@ -53,6 +54,7 @@ class MlpModel {
   std::vector<std::string> dataset_;
   bool is_test_dataset_loaded_ = false;
   std::vector<std::string> test_dataset_;
+  std::vector<double> train_errors_{};
   testResults test_results_{};
   char recognizedLetter_ = 0;
   void readLetter(const std::string line, int *desired, RowVector *&data);
