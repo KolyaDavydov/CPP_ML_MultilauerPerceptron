@@ -10,24 +10,34 @@ class MlpController {
 
   bool openModel(std::string filename) {
     model_->openModel(filename);
-    return model_->getValid();
+    return model_->getModelValid();
   }
+
   bool openDataset(std::string filename) {
     model_->openDataset(filename);
     return model_->getDatasetLoaded();
   }
 
+  bool openTestDataset(std::string filename) {
+    model_->openTestDataset(filename);
+    return model_->getTestDatasetLoaded();
+  }
+
   bool saveModel(std::string filename) { return model_->saveModel(filename); }
 
-  bool trainModel(int epoch, int hiden_layers) {
+  void trainModel(int epoch, int hiden_layers) {
     model_->trainModel(epoch, hiden_layers);
-    return model_->getDatasetLoaded();
   }
+
   char recognizeImage(std::string letter) {
     model_->recognizeImage(letter);
     return model_->getRecognized();
   }
-  bool testModel(int test_part) { return model_->testModel(test_part); }
+
+  testResults testModel(int test_part) {
+    model_->testModel(test_part);
+    return model_->getTestResults();
+  }
 
  private:
   MlpModel *model_;

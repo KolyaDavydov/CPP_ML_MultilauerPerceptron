@@ -1,10 +1,18 @@
 #include "view.h"
 
+#include <QMessageBox>
 #include <iostream>
 
 #include "ui_view.h"
 
 namespace s21 {
+
+void delay(int millisecondsToWait) {
+  QTime dieTime = QTime::currentTime().addMSecs(millisecondsToWait);
+  while (QTime::currentTime() < dieTime) {
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+  }
+}
 
 s21::MlpModel model;
 s21::MlpController controller(&model);
@@ -29,6 +37,8 @@ void MlpView::SetupButtons() {
           SLOT(SaveModel()));
   connect(ui_->pushButton_open_dataset, SIGNAL(clicked()), this,
           SLOT(OpenDataset()));
+  connect(ui_->pushButton_open_test_dataset, SIGNAL(clicked()), this,
+          SLOT(OpenTestDataset()));
   connect(ui_->pushButton_open_bmp, SIGNAL(clicked()), this, SLOT(OpenBmp()));
   connect(ui_->pushButton_train_model, SIGNAL(clicked()), this,
           SLOT(TrainModel()));
@@ -69,6 +79,17 @@ void MlpView::OpenDataset() {
   }
 }
 
+void MlpView::OpenTestDataset() {
+  QString file_name =
+      QFileDialog::getOpenFileName(this, tr("Открыть тестовый датасет"),
+                                   QDir::homePath(), "Datasets (*.csv)");
+  if (!file_name.isEmpty() && !file_name.isNull()) {
+    std::string file_name_ = file_name.toStdString();
+
+    controller.openTestDataset(file_name_);
+  }
+}
+
 void MlpView::OpenBmp() {
   QImage image;
   QString file_name = QFileDialog::getOpenFileName(
@@ -105,13 +126,22 @@ void MlpView::OpenBmp() {
 void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
-
   controller.trainModel(epoch, hiden_layers);
 };
 
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
-  controller.testModel(test_part);
+  testResults testRes = controller.testModel(test_part);
+  QString res =
+      "Test results\nAccuracy: " + QString::number(testRes.accuracy, 'f', 1) +
+      " %\nPrecision: " + QString::number(testRes.precision * 100, 'f', 1) +
+      " %\nRecall: " + QString::number(testRes.recall * 100, 'f', 1) +
+      " %\nF-measure: " + QString::number(testRes.fmeasure * 100, 'f', 1) +
+      " %\nRunning time: " + QString::number(testRes.runtime / 1000, 'f', 1) +
+      " s";
+  QMessageBox msgBox;
+  msgBox.setText(res);
+  msgBox.exec();
 };
 
 void MlpView::RecognizeImage() {

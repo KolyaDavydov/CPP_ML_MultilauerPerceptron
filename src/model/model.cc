@@ -17,20 +17,24 @@ namespace s21 {
  * Если Файла нет или ошибка чтения, то 'is_valid_' == 1
  */
 bool MlpModel::openModel(std::string filename) {
-  is_valid_ = false;
+  is_model_valid_ = false;
   file_.open(filename);
   if (file_.is_open()) {
     net_.load(filename.c_str());
-    is_valid_ = true;
+    is_model_valid_ = true;
   } else {
-    is_valid_ = false;
+    is_model_valid_ = false;
   }
-  return is_valid_;
+  return is_model_valid_;
 };
 
-bool MlpModel::getValid() { return is_valid_; }
+bool MlpModel::getModelValid() { return is_model_valid_; }
 
 bool MlpModel::getDatasetLoaded() { return is_dataset_loaded_; }
+
+bool MlpModel::getTestDatasetLoaded() { return is_test_dataset_loaded_; }
+
+testResults MlpModel::getTestResults() { return test_results_; }
 
 size_t GetFileSize(std::string filename) {
   std::ifstream file_;
@@ -58,7 +62,24 @@ void MlpModel::openDataset(std::string filepath) {
       }
     }
     is_dataset_loaded_ = true;
-    // std::sort(dataset_.begin(), dataset_.end());
+    ifs.close();
+  }
+}
+
+void MlpModel::openTestDataset(std::string filepath) {
+  std::string line;
+  test_dataset_.erase(test_dataset_.begin(), test_dataset_.end());
+  is_test_dataset_loaded_ = false;
+  test_dataset_size_ = 0;
+  std::ifstream ifs(filepath);
+  if (ifs.is_open()) {
+    while (std::getline(ifs, line)) {
+      if (line.length() > 1569) {
+        test_dataset_.push_back(line);
+        test_dataset_size_++;
+      }
+    }
+    is_test_dataset_loaded_ = true;
     ifs.close();
   }
 }
@@ -145,7 +166,7 @@ void MlpModel::recognizeImage(std::string letter) {
   int desired;  // фактическое значение (номер буквы) текущей строки (первое
                 // число строки)
   readLetter(letter, &desired, input);
-  if (!is_valid_) {
+  if (!is_model_valid_) {
     cout << "Model not loaded" << endl;
   } else {
     // создаем вектор-шаблон длиной 26 (количество букв)
@@ -159,60 +180,66 @@ void MlpModel::recognizeImage(std::string letter) {
     delete input;
 
     double value = 0;
-    int actual = net_.vote(value);
-    cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
-    // cout << char(desired + 65) << " >> ";
+    int actual = net_.vote(value) + 65;
+    cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
+    // cout << char(desired) << " >> ";
     // if (desired != actual)
-    //   cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
+    //   cout << CMD_RED << char(actual) << CMD_RESET " ("
     //        << value - net_.output(desired) << ")" << endl;
     // else
-    //   cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
+    //   cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
 
-    recognizedLetter_ = actual + 65;
+    recognizedLetter_ = actual;
   }
 }
 
 bool MlpModel::trainModel(int epoch, int hiden_layers) {
   vector<int> init_vector{};
-  switch (hiden_layers) {  // количество нейронов подобрано эмпирически
-    case 2:
-      init_vector = {28 * 28, 64, 48, LETTERS};
-      break;
-    case 3:
-      init_vector = {28 * 28, 64, 52, 48, LETTERS};
-      break;
-    case 4:
-      init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
-      break;
-    case 5:
-      init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
-      break;
-    default:
-      init_vector = {28 * 28, 64, 48, LETTERS};
+  if (!is_dataset_loaded_) {
+    cout << "Dataset not loaded" << endl;
+  } else {
+    switch (hiden_layers) {  // количество нейронов подобрано эмпирически
+      case 2:
+        init_vector = {28 * 28, 64, 48, LETTERS};
+        break;
+      case 3:
+        init_vector = {28 * 28, 120, 91, 48, LETTERS};
+        break;
+      case 4:
+        init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
+        break;
+      case 5:
+        init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
+        break;
+      default:
+        init_vector = {28 * 28, 64, 48, LETTERS};
+    }
+    net_.init(init_vector, 0.05);
+    // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
+    // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
+    // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
+    train(net_, epoch);
+    is_model_valid_ = true;
+    return true;
   }
-  net_.init(init_vector, 0.02);
-  // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
-  // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
-  // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
-  train(net_, epoch);
-  return true;
+  return false;
 }
 
 bool MlpModel::testModel(int test_part) {
   bool result = false;
-  if (!is_dataset_loaded_) {
-    cout << "Dataset not loaded" << endl;
-  } else if (!is_valid_) {
+  if (!is_test_dataset_loaded_) {
+    cout << "Test dataset not loaded" << endl;
+  } else if (!is_model_valid_) {
     cout << "Model not loaded" << endl;
   } else if (test_part == 0) {
-    cout << "Nothing to test, test part ==0" << endl;
+    cout << "Nothing to test, test part == 0" << endl;
   } else {
     QElapsedTimer t;
     t.start();
-
     test(net_, test_part);
     evaluate(net_);
     result = true;
+    test_results_.runtime = t.elapsed();
     std::cout << "Operation in testModel " << t.elapsed() << "ms" << endl;
   }
   return result;
@@ -228,6 +255,7 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
       if (train(net, dataset_[n].c_str(), ++serial, false)) success++;
       cost += net.mse();
     }
+    test(net_, 100);
   }
   double error = (double)(serial - success) / serial * 100;
   cout << "TRAINING:" << endl;
@@ -236,7 +264,7 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
   cout << "fail\t" << serial - success << endl;
   cout << "error\t" << error << "%" << endl;
   cout << endl;
-  if (error < 30) is_valid_ = true;
+  if (error < 30) is_model_valid_ = true;
 
   // net.save("params.txt");
 }
@@ -244,15 +272,17 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
 void MlpModel::test(NeuralNetwork &net, int test_part) {
   double cost = 0;
   int serial = 0, success = 0;
-  for (size_t n = 0; n < dataset_size_ * test_part / 100; n++) {
-    if (train(net, dataset_[n].c_str(), ++serial, true)) success++;
+  for (size_t n = 0; n < test_dataset_size_ * test_part / 100; n++) {
+    if (train(net, test_dataset_[n].c_str(), ++serial, true)) success++;
     cost += net.mse();
   }
+  double error = (double)(serial - success) / serial * 100;
+  test_results_.accuracy = 100 - error;
   cout << "TESTING:" << endl;
   cout << "cost\t" << cost / (serial * 2) << endl;
   cout << "success\t" << success << endl;
   cout << "fail\t" << serial - success << endl;
-  cout << "error\t" << (double)(serial - success) / serial * 100 << "%" << endl;
+  cout << "error\t" << error << "%" << endl;
   cout << endl;
 }
 
@@ -271,7 +301,9 @@ void MlpModel::evaluate(NeuralNetwork &net) {
   double precisionVal = precision->sum() / numValues;
   double recallVal = recall->sum() / numValues;
   double f1score = 2 * precisionVal * recallVal / (precisionVal + recallVal);
-
+  test_results_.precision = precisionVal;
+  test_results_.recall = recallVal;
+  test_results_.fmeasure = f1score;
   cout << "Confusion matrix:" << endl;
   cout << *net.mConfusion << endl;
   cout << "Precision: " << (int)(precisionVal * 100) << '%' << endl;

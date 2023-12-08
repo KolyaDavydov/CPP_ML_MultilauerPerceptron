@@ -6,16 +6,27 @@
 
 #include "neural_network.h"
 
+struct testResults {
+  double accuracy;
+  double precision;
+  double recall;
+  double fmeasure;
+  double runtime;
+};
+
 namespace s21 {
 class MlpModel {
  public:
   MlpModel() = default;
   bool openModel(std::string filename);
   void openDataset(std::string filepath);
+  void openTestDataset(std::string filepath);
   bool saveModel(std::string filename);
 
-  bool getValid();
+  bool getModelValid();
   bool getDatasetLoaded();
+  bool getTestDatasetLoaded();
+  testResults getTestResults();
   bool train(NeuralNetwork &net, std::string line, int serial, bool testing);
   void train(NeuralNetwork &net, int epoch);
   void test(NeuralNetwork &net, int test_part);
@@ -24,17 +35,25 @@ class MlpModel {
   void evaluate(NeuralNetwork &net);
   void recognizeImage(std::string letter);
   char getRecognized() {
-    if (recognizedLetter_) return recognizedLetter_;
+    if (recognizedLetter_) {
+      return recognizedLetter_;
+    } else {
+      return '-';
+    }
   };
   size_t getDatasetSize(std::string filepath);
 
  private:
   std::ifstream file_{};
   size_t dataset_size_;
+  size_t test_dataset_size_;
   NeuralNetwork net_{};
-  bool is_valid_ = false;
+  bool is_model_valid_ = false;
   bool is_dataset_loaded_ = false;
   std::vector<std::string> dataset_;
+  bool is_test_dataset_loaded_ = false;
+  std::vector<std::string> test_dataset_;
+  testResults test_results_{};
   char recognizedLetter_ = 0;
   void readLetter(const std::string line, int *desired, RowVector *&data);
   void Close() {
