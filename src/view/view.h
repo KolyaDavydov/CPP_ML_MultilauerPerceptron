@@ -36,6 +36,7 @@ class MlpView : public QMainWindow {
   Ui::MainWindow *ui_;
   // MlpModel *model_;
   void SetupButtons();
+  void updateLabel();
   paintScene *scene;  // Объявляем кастомную графическую сцену
 };
 }  // namespace s21

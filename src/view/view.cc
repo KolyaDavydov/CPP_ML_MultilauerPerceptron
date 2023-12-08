@@ -1,18 +1,12 @@
 #include "view.h"
 
 #include <QMessageBox>
+#include <QTimer>
 #include <iostream>
 
 #include "ui_view.h"
 
 namespace s21 {
-
-void delay(int millisecondsToWait) {
-  QTime dieTime = QTime::currentTime().addMSecs(millisecondsToWait);
-  while (QTime::currentTime() < dieTime) {
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-  }
-}
 
 s21::MlpModel model;
 s21::MlpController controller(&model);
@@ -65,7 +59,6 @@ void MlpView::SaveModel() {
       this, tr("Сохранить модель"), QDir::homePath(), "TXT-files (*.txt)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-
     controller.saveModel(file_name_);
   }
 }
@@ -74,7 +67,6 @@ void MlpView::OpenDataset() {
       this, tr("Открыть датасет"), QDir::homePath(), "Datasets (*.csv)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-
     controller.openDataset(file_name_);
   }
 }
@@ -85,7 +77,6 @@ void MlpView::OpenTestDataset() {
                                    QDir::homePath(), "Datasets (*.csv)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-
     controller.openTestDataset(file_name_);
   }
 }
@@ -123,20 +114,28 @@ void MlpView::OpenBmp() {
   }
 }
 
+void MlpView::updateLabel() {
+  std::vector<double> train_errors = controller.getTrainErrors();
+  ui_->label_test_epoch_val->setText(QString("%1").arg(train_errors.size()));
+  ui_->label_test_error_val->setText(
+      QString("%1").arg(train_errors[train_errors.size()]));
+  ui_->label_test_error_val->repaint();
+}
+
 void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.trainModel(epoch, hiden_layers);
-  int count_epoch = 1;
-  while (count_epoch != epoch) {
-    std::vector<double> train_errors = controller.getTrainErrors();
-    ui_->label_test_epoch_val->setText(QString("%1").arg(count_epoch));
-    ui_->label_test_error_val->setText(
-        QString("%1").arg(train_errors[train_errors.size()]));
-    ui_->label_test_error_val->repaint();
-    count_epoch = train_errors.size();
-    delay(500);
-  }
+  updateLabel();
+  // int count_epoch = 1;
+  // while (count_epoch != epoch) {
+  //   std::vector<double> train_errors = controller.getTrainErrors();
+  //   ui_->label_test_epoch_val->setText(QString("%1").arg(count_epoch));
+  //   ui_->label_test_error_val->setText(
+  //       QString("%1").arg(train_errors[train_errors.size()]));
+  //   ui_->label_test_error_val->repaint();
+  //   count_epoch = train_errors.size();
+  // }
 };
 
 void MlpView::TestModel() {
