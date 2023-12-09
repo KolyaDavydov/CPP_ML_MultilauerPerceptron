@@ -219,7 +219,7 @@ bool MlpModel::trainModel(int epoch, int hiden_layers) {
     // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
     // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
     train(net_, epoch);
-    is_model_valid_ = true;
+    // is_model_valid_ = true;
     return true;
   }
   return false;
@@ -249,6 +249,7 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
   double cost = 0;
   int serial = 0;   // номер строки датасета (буквы)
   int success = 0;  // для каждой строки датасета (буквы) успешное определение
+  train_errors_.clear();
   // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
     for (size_t n = 0; n < dataset_size_; n++) {

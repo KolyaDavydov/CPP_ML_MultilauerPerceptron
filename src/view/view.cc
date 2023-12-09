@@ -1,7 +1,9 @@
 #include "view.h"
 
+#include <QLineSeries>
 #include <QMessageBox>
 #include <QTimer>
+#include <QtCharts>
 #include <iostream>
 
 #include "ui_view.h"
@@ -19,6 +21,11 @@ MlpView::MlpView(QWidget *parent)
   ui_->graphicsView->setSceneRect(scene->sceneRect());
   scene->setSceneRect(0, 0, ui_->graphicsView->width(),
                       ui_->graphicsView->height());
+  QChart *chart = new QChart();
+  chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
+  chart->legend()->hide();
+  chart->createDefaultAxes();
+  chart->setBackgroundBrush(QBrush(QColor("salmon")));
   SetupButtons();
 }
 
@@ -42,6 +49,25 @@ void MlpView::SetupButtons() {
           SLOT(TestModel()));
   connect(ui_->pushButton_clear_paint, SIGNAL(clicked()), this,
           SLOT(ClearPaint()));
+}
+void MlpView::plotChart(std::vector<double> series_vec) {
+  QLineSeries* series = new QLineSeries();
+  int i = 0;
+  for (auto var : series_vec) {
+    series->append(i, var);
+    i++;
+  }
+  QChart *chart = new QChart();
+  chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
+  chart->legend()->hide();
+  series->setColor(QColor(255, 255, 255));
+  chart->addSeries(series);
+  chart->createDefaultAxes();
+  chart->setBackgroundBrush(QBrush(QColor("black")));
+  // chart->setTitle("Simple line chart example");
+  ui_->chartView->setChart(chart);
+  ui_->chartView->setRenderHint(QPainter::Antialiasing);
+  ui_->chartView->show();
 }
 
 void MlpView::OpenModel() {
@@ -98,7 +124,7 @@ void MlpView::OpenBmp() {
       letter << "0";
       for (int x = 0; x < 28; x++) {
         for (int y = 0; y < 28; y++) {
-          QColor pixColor = grayscale.pixelColor(x, y);
+          QColor pixColor = small.pixelColor(x, y);
           int red = pixColor.red();
           letter << "," << red;
         }
@@ -127,6 +153,8 @@ void MlpView::TrainModel() {
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.trainModel(epoch, hiden_layers);
   updateLabel();
+  std::vector<double> train_errors = controller.getTrainErrors();
+  plotChart(train_errors);
   // int count_epoch = 1;
   // while (count_epoch != epoch) {
   //   std::vector<double> train_errors = controller.getTrainErrors();
