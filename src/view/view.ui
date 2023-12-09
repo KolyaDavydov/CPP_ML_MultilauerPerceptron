@@ -474,9 +474,9 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_test_error_val">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>750</x>
       <y>670</y>
-      <width>21</width>
+      <width>31</width>
       <height>21</height>
      </rect>
     </property>
@@ -490,10 +490,10 @@ QPushButton:pressed {
    <widget class="QLabel" name="label_test_epoch_val">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>750</x>
       <y>640</y>
-      <width>21</width>
-      <height>21</height>
+      <width>31</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="styleSheet">

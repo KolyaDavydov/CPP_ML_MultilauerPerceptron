@@ -236,8 +236,11 @@ bool MlpModel::testModel(int test_part) {
   } else {
     QElapsedTimer t;
     t.start();
-    test(net_, test_part);
-    evaluate(net_);
+    // для тестирования времени работы Part 2 (10, 100, 1000 раз)
+    for (int i = 0; i < 1; ++i) {
+      test(net_, test_part);
+      evaluate(net_);
+    }
     result = true;
     test_results_.runtime = t.elapsed();
     std::cout << "Operation in testModel " << t.elapsed() << "ms" << endl;
