@@ -25,7 +25,8 @@ MlpView::MlpView(QWidget *parent)
   chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
   chart->legend()->hide();
   chart->createDefaultAxes();
-  chart->setBackgroundBrush(QBrush(QColor("salmon")));
+  chart->setBackgroundBrush(QBrush(QColor("black")));
+  ui_->chartView->setChart(chart);
   SetupButtons();
 }
 
