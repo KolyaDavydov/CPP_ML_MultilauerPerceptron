@@ -6,6 +6,9 @@
 
 #include "neural_network.h"
 
+#define MATRIX_MODEL 1
+#define GRAPH_MODEL 2
+
 struct testResults {
   double accuracy;
   double precision;
@@ -32,7 +35,7 @@ class MlpModel {
   void train(NeuralNetwork &net, int epoch);
   void test(NeuralNetwork &net, int test_part);
   bool testModel(int test_part);
-  bool trainModel(int epoch, int hiden_layers);
+  bool trainModel(int model_type, int epoch, int hiden_layers);
   void evaluate(NeuralNetwork &net);
   void recognizeImage(std::string letter);
   char getRecognized() {

@@ -182,45 +182,42 @@ void MlpModel::recognizeImage(std::string letter) {
     double value = 0;
     int actual = net_.vote(value) + 65;
     cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
-    // cout << char(desired) << " >> ";
-    // if (desired != actual)
-    //   cout << CMD_RED << char(actual) << CMD_RESET " ("
-    //        << value - net_.output(desired) << ")" << endl;
-    // else
-    //   cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
-
     recognizedLetter_ = actual;
   }
 }
 
-bool MlpModel::trainModel(int epoch, int hiden_layers) {
+bool MlpModel::trainModel(int model_type, int epoch, int hiden_layers) {
   vector<int> init_vector{};
   if (!is_dataset_loaded_) {
     cout << "Dataset not loaded" << endl;
   } else {
-    switch (hiden_layers) {  // количество нейронов подобрано эмпирически
-      case 2:
-        init_vector = {28 * 28, 64, 48, LETTERS};
-        break;
-      case 3:
-        init_vector = {28 * 28, 120, 91, 48, LETTERS};
-        break;
-      case 4:
-        init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
-        break;
-      case 5:
-        init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
-        break;
-      default:
-        init_vector = {28 * 28, 64, 48, LETTERS};
+    if (model_type == MATRIX_MODEL) {
+      switch (hiden_layers) {  // количество нейронов подобрано эмпирически
+        case 2:
+          init_vector = {28 * 28, 64, 48, LETTERS};
+          break;
+        case 3:
+          init_vector = {28 * 28, 120, 91, 48, LETTERS};
+          break;
+        case 4:
+          init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
+          break;
+        case 5:
+          init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
+          break;
+        default:
+          init_vector = {28 * 28, 64, 48, LETTERS};
+      }
+      net_.init(init_vector, 0.05);
+      // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
+      // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
+      // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
+      train(net_, epoch);
+      // is_model_valid_ = true;
+      return true;
+    } else {
+      cout << "Model in development" << endl;
     }
-    net_.init(init_vector, 0.05);
-    // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
-    // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
-    // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
-    train(net_, epoch);
-    // is_model_valid_ = true;
-    return true;
   }
   return false;
 }

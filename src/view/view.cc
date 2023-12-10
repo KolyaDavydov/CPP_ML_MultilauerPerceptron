@@ -16,17 +16,7 @@ s21::MlpController controller(&model);
 MlpView::MlpView(QWidget *parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow) {
   ui_->setupUi(this);
-  scene = new paintScene();  // Инициализируем графическую сцену
-  ui_->graphicsView->setScene(scene);  // Устанавливаем графическую сцену
-  ui_->graphicsView->setSceneRect(scene->sceneRect());
-  scene->setSceneRect(0, 0, ui_->graphicsView->width(),
-                      ui_->graphicsView->height());
-  QChart *chart = new QChart();
-  chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
-  chart->legend()->hide();
-  chart->createDefaultAxes();
-  chart->setBackgroundBrush(QBrush(QColor("black")));
-  ui_->chartView->setChart(chart);
+  SetupCharts();
   SetupButtons();
 }
 
@@ -51,6 +41,21 @@ void MlpView::SetupButtons() {
   connect(ui_->pushButton_clear_paint, SIGNAL(clicked()), this,
           SLOT(ClearPaint()));
 }
+
+void MlpView::SetupCharts() {
+  scene = new paintScene();  // Инициализируем графическую сцену
+  ui_->graphicsView->setScene(scene);  // Устанавливаем графическую сцену
+  ui_->graphicsView->setSceneRect(scene->sceneRect());
+  scene->setSceneRect(0, 0, ui_->graphicsView->width(),
+                      ui_->graphicsView->height());
+  QChart *chart = new QChart();
+  chart->setAnimationOptions(QChart::AnimationOption::AllAnimations);
+  chart->legend()->hide();
+  chart->createDefaultAxes();
+  chart->setBackgroundBrush(QBrush(QColor("black")));
+  ui_->chartView->setChart(chart);
+}
+
 void MlpView::plotChart(std::vector<double> series_vec) {
   QLineSeries* series = new QLineSeries();
   int i = 0;
@@ -89,6 +94,7 @@ void MlpView::SaveModel() {
     controller.saveModel(file_name_);
   }
 }
+
 void MlpView::OpenDataset() {
   QString file_name = QFileDialog::getOpenFileName(
       this, tr("Открыть датасет"), QDir::homePath(), "Datasets (*.csv)");
@@ -152,10 +158,17 @@ void MlpView::updateLabel() {
 void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
-  controller.trainModel(epoch, hiden_layers);
-  updateLabel();
-  std::vector<double> train_errors = controller.getTrainErrors();
-  plotChart(train_errors);
+  int model_type;
+  if (ui_->matrix_model->isChecked()) {
+    model_type = MATRIX_MODEL;
+  } else {
+    model_type = GRAPH_MODEL;
+  }
+  if (controller.trainModel(model_type, epoch, hiden_layers)) {
+    updateLabel();
+    std::vector<double> train_errors = controller.getTrainErrors();
+    plotChart(train_errors);
+  }
   // int count_epoch = 1;
   // while (count_epoch != epoch) {
   //   std::vector<double> train_errors = controller.getTrainErrors();

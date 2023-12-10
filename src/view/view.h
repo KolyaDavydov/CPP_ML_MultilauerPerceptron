@@ -36,6 +36,7 @@ class MlpView : public QMainWindow {
   Ui::MainWindow *ui_;
   // MlpModel *model_;
   void SetupButtons();
+  void SetupCharts();
   void plotChart(std::vector<double> series_val);
   void updateLabel();
   paintScene *scene;  // Объявляем кастомную графическую сцену
