@@ -31,6 +31,7 @@ class MlpView : public QMainWindow {
   void TestModel();
   void RecognizeImage();
   void ClearPaint();
+  void CrossValidation();
 
  private:
   Ui::MainWindow *ui_;

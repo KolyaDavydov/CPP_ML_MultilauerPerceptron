@@ -3,7 +3,7 @@
 
 #include <fstream>
 #include <string>
-
+#include <random>
 #include "graph_perceptron.h"
 
 #define MATRIX_MODEL 1
@@ -38,6 +38,7 @@ class MlpModel {
   void test(GraphPerceptron &net, int test_part);
   bool testModel(int test_part);
   bool trainModel(int model_type, int epoch, int hiden_layers);
+  std::vector<testResults> crossValidation(int k_value, int model_type, int epoch, int hiden_layers);
 
   void evaluate(GraphPerceptron &net);
   void recognizeImage(std::string letter);

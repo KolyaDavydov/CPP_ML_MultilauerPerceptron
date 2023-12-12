@@ -212,7 +212,8 @@ bool MlpModel::trainModel(int model_type, int epoch, int hiden_layers) {
           init_vector = {28 * 28, 120, 91, 48, LETTERS};
           break;
         case 4:
-          init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
+          // init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
+          init_vector = {28 * 28, 500, 300, 200, 100, LETTERS};
           break;
         case 5:
           init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
@@ -343,8 +344,124 @@ void MlpModel::evaluate(GraphPerceptron &net) {
   delete recall;
 };
 
+/**
+ * @brief для обучения исопльзуется кросс-валидация:
+ * Сначала загружаем тренировочный датасет "Open Dataset", затем:
+ * 1) делим загруженный датасет на k_value одинковых частей (при этом эти части не пересекаются)
+ * минимум делим датасет на 5 частей.
+ * 2) 1 часть из всех будет тестовым датасетом,
+ * остальные части помещаем в тестовый датасет
+ * 3) Всего будет k_value итераций "обучение - тестирование"
+ * в первой итерации тестовым датасетом будет первая часть, остальные треноровочным
+ * в следующей итерации тестовым датасетом будет вторая часть, остальные тренировочными
+ * и так далее пока тестовым датасетом не станет последняя часть.
+ * 
+ * Для наглядности возьмем исходный датасет из 88 800 элементов и k_value = 5.
+ * исходный датасет разделиться на 5 равных частей по 17 760 элементов
+ * Таким образом в тестовой выборке будет 17 760 элементов,
+ * а в тренировочной 71 040 элементов, причем они не пересекаются
+ * 
+ * В каждой итерации происходит следующее:
+ * 3.1) 
+ *    - происходит обучение на тренировочном датасете из 71 040 элементов
+ *    - после обучения веса сохраняются во временный tmp_model.txt файл
+ *    - загружаются веса из tmp_model.txt файла
+ *    - на загруженной модели происходит тестирование на тестовом датасете из 17 760 элементов
+ *    - полученые показатели тестов сохраняются в вектор results
+ *    - сравнивается показатель accuracy с показателем на предыдущей итерацией или 0
+ *    и если точность после текущей иттерации выше, то эту модель становится основной
+ *    и когда все иттерации прошли после нажатии кнопки 'Save Model" сохранится имено та модель accuracy которой выше
+*/
+std::vector<testResults> MlpModel::crossValidation(int k_value, int model_type, int epoch, int hiden_layers) {
+  // вектор для хранения результатов тестов для всех иттераций
+  std::vector<testResults> results;
+  // выбираем архитектуру для кросс-валидации так же как и при обычном обучении
+  vector<int> init_vector{};
+  if (!is_dataset_loaded_) {
+    cout << "Dataset not loaded" << endl;
+  } else {
+    if (model_type == MATRIX_MODEL) {
+      switch (hiden_layers) {  // количество нейронов подобрано эмпирически
+        case 2:
+          init_vector = {28 * 28, 64, 48, LETTERS};
+          break;
+        case 3:
+          init_vector = {28 * 28, 120, 91, 48, LETTERS};
+          break;
+        case 4:
+          init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
+          break;
+        case 5:
+          init_vector = {28 * 28, 128, 64, 52, 48, 32, LETTERS};
+          break;
+        default:
+          init_vector = {28 * 28, 64, 48, LETTERS};
+      }
+    } else {
+      cout << "Model in development" << endl;
+    }
+  }
+  // создаем вектор содержащий объекты перцептронов в количестве = k_value
+  // и каждый объект инициализируем соответствующей архитектурой
+  std::vector<GraphPerceptron> parts(k_value); // будет храниться несколько объектов перцептронов в количестве k_value
+  for (int i = 0; i < k_value; ++i) {
+    parts[i].init(init_vector, 0.01);
+  }
+  
+  // перемешиваем исходный датасет
+  std::default_random_engine rng_{};
+  std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
+  // исходный датасет разбиваем на k_value не пересекающихся частей
+  // и каждая часть будет находится в векторе datasets
+  std::vector<std::vector<std::string>> datasets(k_value);
+  int part_size = (int) (dataset_size_ / k_value); // размер части датасета
+  
+  // процесс разбиения исходного датасета и помещения каждой части в datasets
+  auto iter_begin = dataset_.begin();
+  auto iter_end = dataset_.begin() + part_size;
+  for(int i = 0; i < k_value; i++) {
+    datasets[i].insert(datasets[i].begin(), iter_begin, iter_end);
+    iter_begin = iter_end;
+    iter_end = iter_begin + part_size;
+  }
 
+  double accuray_k = 0.0; // Будет хранить показатель точности для каждой итерации и сравниваться с предыдущей
+  const char* tmp_model = "tmp_model.txt"; // для временного хранения модели
+  for (int i = 0; i < k_value; i++) {
+    // при каждой иттерации мы как бы обновляем значения параметров текущего класса
+    this->dataset_.clear();
+    this->test_dataset_.clear();
 
+    // создаем тестовый датасет - одна часть из набора
+    this->test_dataset_ = datasets[i];
+    // создаем тренировочный датасет - остальные части кроме одной,
+    auto iter = this->dataset_.cbegin();
+    for (int j = 0; j < k_value; ++j) {
+      if (j != i) {
+        dataset_.insert(iter, datasets[j].begin(), datasets[j].end());
+      }  
+    }
+
+    // Обновляем размеры текущих датасетов
+    dataset_size_ = dataset_.size();
+    test_dataset_size_ = test_dataset_.size();
+
+    train(parts[i], epoch);     // обучение
+    parts[i].save(tmp_model);   // сохранение модели в временный файл
+    parts[i].load(tmp_model);   // загрузка модели из временного файла
+    test(parts[i], 100);        // тестирвоание на загруженной модели
+    evaluate(parts[i]);         // определение метрик после тестов
+
+    results.push_back(this->test_results_); // запихиваем полученные метрики в вектор
+    // сравниваем метрику accuracy c предыдущей иттерацией
+    // если она выше, то как бы загружаем модель в основной перцептрон (net_)
+    if (results[i].accuracy > accuray_k) {
+      net_.load(tmp_model);
+      accuray_k = results[i].accuracy;
+    }
+  }
+  return results;
+};
 
 
 

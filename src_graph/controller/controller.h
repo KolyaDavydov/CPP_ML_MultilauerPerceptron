@@ -41,6 +41,10 @@ class MlpController {
 
   std::vector<double> getTrainErrors() { return model_->getTrainErrors(); };
 
+  std::vector<testResults> crossValidation(int k_value, int model_type, int epoch, int hiden_layers) {
+    return model_->crossValidation(k_value, model_type, epoch, hiden_layers);
+  }
+
  private:
   MlpModel *model_;
 };

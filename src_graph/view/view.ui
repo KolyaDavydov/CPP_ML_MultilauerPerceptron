@@ -67,7 +67,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>640</x>
-      <y>270</y>
+      <y>230</y>
       <width>99</width>
       <height>20</height>
      </rect>
@@ -83,7 +83,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>640</x>
-      <y>300</y>
+      <y>260</y>
       <width>99</width>
       <height>20</height>
      </rect>
@@ -96,7 +96,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>240</y>
+      <y>200</y>
       <width>60</width>
       <height>30</height>
      </rect>
@@ -135,7 +135,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>640</x>
-      <y>170</y>
+      <y>160</y>
       <width>91</width>
       <height>30</height>
      </rect>
@@ -151,7 +151,7 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>629</x>
-      <y>210</y>
+      <y>180</y>
       <width>131</width>
       <height>25</height>
      </rect>
@@ -196,9 +196,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>330</y>
-      <width>121</width>
-      <height>22</height>
+      <y>290</y>
+      <width>123</width>
+      <height>25</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="layers_layout">
@@ -228,9 +228,9 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>370</y>
+      <y>330</y>
       <width>121</width>
-      <height>22</height>
+      <height>25</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="epoch_layout">
@@ -533,6 +533,58 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>Test errors by epoch</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_cross_validation">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>360</y>
+      <width>101</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+  color: white;
+  background-color: rgb(200, 150, 50);
+  border: 1px solid black;
+}
+QPushButton:pressed {
+    background-color: rgb(150, 100, 0);
+}</string>
+    </property>
+    <property name="text">
+     <string>Cross-validation</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="k_value">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>390</y>
+      <width>47</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>5</number>
+    </property>
+    <property name="maximum">
+     <number>10</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>390</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>k-value</string>
     </property>
    </widget>
   </widget>

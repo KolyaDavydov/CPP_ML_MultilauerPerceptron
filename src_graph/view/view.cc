@@ -40,6 +40,8 @@ void MlpView::SetupButtons() {
           SLOT(TestModel()));
   connect(ui_->pushButton_clear_paint, SIGNAL(clicked()), this,
           SLOT(ClearPaint()));
+  connect(ui_->pushButton_cross_validation, SIGNAL(clicked()), this,
+          SLOT(CrossValidation()));
 }
 
 void MlpView::SetupCharts() {
@@ -222,6 +224,39 @@ void MlpView::RecognizeImage() {
 void MlpView::ClearPaint() {
   scene->clear();
   ui_->graphicsView->setSceneRect(scene->sceneRect());
+};
+
+void MlpView::CrossValidation() {
+  int k_value = ui_->k_value->value();
+  int epoch = ui_->epoch_number->value();
+  int hiden_layers = ui_->hiden_layers_number->value();
+  int model_type;
+  if (ui_->matrix_model->isChecked()) {
+    model_type = MATRIX_MODEL;
+  } else {
+    model_type = GRAPH_MODEL;
+  }
+  // вектор куда сохраняются значения тестовых частей для k-групп
+  std::vector<testResults> crossResultstest = controller.crossValidation(k_value, model_type, epoch, hiden_layers);
+  QString res = "";
+  for (int i = 0; i < k_value; ++i) {
+    res += "\n       Number of k group: " + QString::number(i + 1) + "\n"
+      "Test results\nAccuracy:\t" + QString::number(crossResultstest[i].accuracy, 'f', 1) +
+      " %\nPrecision:\t" + QString::number(crossResultstest[i].precision * 100, 'f', 1) +
+      " %\nRecall:\t" + QString::number(crossResultstest[i].recall * 100, 'f', 1) +
+      " %\nF-measure:\t" + QString::number(crossResultstest[i].fmeasure * 100, 'f', 1);   
+  }
+  // testResults testRes = controller.testModel(test_part);
+  // QString res =
+  //     "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f', 1) +
+  //     " %\nPrecision:\t" + QString::number(testRes.precision * 100, 'f', 1) +
+  //     " %\nRecall:\t" + QString::number(testRes.recall * 100, 'f', 1) +
+  //     " %\nF-measure:\t" + QString::number(testRes.fmeasure * 100, 'f', 1) +
+  //     " %\nTest time:\t" + QString::number(testRes.runtime / 1000, 'f', 1) +
+  //     " s";
+  QMessageBox msgBox;
+  msgBox.setText(res);
+  msgBox.exec();
 };
 
 }  // namespace s21
