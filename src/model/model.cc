@@ -2,6 +2,7 @@
 
 #include <QElapsedTimer>
 #include <iostream>
+#include <random>
 #define CMD_RESET "\x1b[0m"
 #define CMD_RED "\x1b[31;1m"
 #define CMD_GREEN "\x1b[32;1m"
@@ -197,7 +198,7 @@ bool MlpModel::trainModel(int model_type, int epoch, int hiden_layers) {
           init_vector = {28 * 28, 64, 48, LETTERS};
           break;
         case 3:
-          init_vector = {28 * 28, 120, 91, 48, LETTERS};
+          init_vector = {28 * 28, 64, 64, 64, LETTERS};
           break;
         case 4:
           init_vector = {28 * 28, 64, 52, 48, 40, LETTERS};
@@ -212,6 +213,7 @@ bool MlpModel::trainModel(int model_type, int epoch, int hiden_layers) {
       // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
       // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
       // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
+
       train(net_, epoch);
       // is_model_valid_ = true;
       return true;
@@ -252,10 +254,14 @@ void MlpModel::train(NeuralNetwork &net, int epoch) {
   train_errors_.clear();
   // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
+    serial = 0;
+    success = 0;
     for (size_t n = 0; n < dataset_size_; n++) {
       if (train(net, dataset_[n].c_str(), ++serial, false)) success++;
       cost += net.mse();
     }
+    std::default_random_engine rng_{};
+    std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
     train_errors_.push_back((double)(serial - success) / serial * 100);
   }
   double error = (double)(serial - success) / serial * 100;
