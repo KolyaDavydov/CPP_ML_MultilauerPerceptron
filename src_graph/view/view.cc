@@ -42,6 +42,10 @@ void MlpView::SetupButtons() {
           SLOT(ClearPaint()));
   connect(ui_->pushButton_cross_validation, SIGNAL(clicked()), this,
           SLOT(CrossValidation()));
+  connect(ui_->radioButton_graph_model, SIGNAL(clicked()), this,
+          SLOT(SetModelType()));
+  connect(ui_->radioButton_matrix_model, SIGNAL(clicked()), this,
+          SLOT(SetModelType()));
 }
 
 void MlpView::SetupCharts() {
@@ -58,7 +62,7 @@ void MlpView::SetupCharts() {
   ui_->chartView->setChart(chart);
 }
 
-void MlpView::plotChart(std::vector<double> series_vec) {
+void MlpView::PlotChart(std::vector<double> series_vec) {
   QLineSeries* series = new QLineSeries();
   int i = 0;
   for (auto var : series_vec) {
@@ -72,54 +76,66 @@ void MlpView::plotChart(std::vector<double> series_vec) {
   chart->addSeries(series);
   chart->createDefaultAxes();
   chart->setBackgroundBrush(QBrush(QColor("black")));
-  // chart->setTitle("Simple line chart example");
   ui_->chartView->setChart(chart);
   ui_->chartView->setRenderHint(QPainter::Antialiasing);
   ui_->chartView->show();
 }
 
+void MlpView::SetModelType() {
+  int model_type;
+  if (ui_->radioButton_matrix_model->isChecked()) {
+    model_type = MATRIX_MODEL;
+  } else {
+    model_type = GRAPH_MODEL;
+  }
+  controller.SetModelType(model_type);
+}
+
 void MlpView::OpenModel() {
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть модель"), QDir::homePath(), "TXT-files (*.txt)");
+      this, tr("Open model"), QDir::homePath(), "TXT-files (*.txt)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
 
-    controller.openModel(file_name_);
+    if (!controller.OpenModel(file_name_)) {
+      QMessageBox msgBox;
+      msgBox.setText("Cannot open model file");
+      msgBox.exec();
+    };
   }
 }
 
 void MlpView::SaveModel() {
   QString file_name = QFileDialog::getSaveFileName(
-      this, tr("Сохранить модель"), QDir::homePath(), "TXT-files (*.txt)");
+      this, tr("Save model"), QDir::homePath(), "TXT-files (*.txt)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-    controller.saveModel(file_name_);
+    controller.SaveModel(file_name_);
   }
 }
 
 void MlpView::OpenDataset() {
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть датасет"), QDir::homePath(), "Datasets (*.csv)");
+      this, tr("Open dataset"), QDir::homePath(), "Datasets (*.csv)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-    controller.openDataset(file_name_);
+    controller.OpenDataset(file_name_);
   }
 }
 
 void MlpView::OpenTestDataset() {
-  QString file_name =
-      QFileDialog::getOpenFileName(this, tr("Открыть тестовый датасет"),
-                                   QDir::homePath(), "Datasets (*.csv)");
+  QString file_name = QFileDialog::getOpenFileName(
+      this, tr("Open test dataset"), QDir::homePath(), "Datasets (*.csv)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
-    controller.openTestDataset(file_name_);
+    controller.OpenTestDataset(file_name_);
   }
 }
 
 void MlpView::OpenBmp() {
   QImage image;
   QString file_name = QFileDialog::getOpenFileName(
-      this, tr("Открыть датасет"), QDir::homePath(), "BMP-files (*.bmp)");
+      this, tr("Open BMP-file"), QDir::homePath(), "BMP-files (*.bmp)");
   if (!file_name.isEmpty() && !file_name.isNull()) {
     std::string file_name_ = file_name.toStdString();
     image.load(file_name_.c_str());
@@ -138,7 +154,7 @@ void MlpView::OpenBmp() {
           letter << "," << red;
         }
       }
-      char recognizedletter = controller.recognizeImage(letter.str());
+      char recognizedletter = controller.RecognizeImage(letter.str());
       ui_->label_recognized_letter->setText(
           QString("%1").arg(recognizedletter));
       ui_->label_recognized_letter->repaint();
@@ -149,28 +165,21 @@ void MlpView::OpenBmp() {
   }
 }
 
-void MlpView::updateLabel() {
-  std::vector<double> train_errors = controller.getTrainErrors();
+void MlpView::UpdateLabel() {
+  std::vector<double> train_errors = controller.GetTrainErrors();
   ui_->label_test_epoch_val->setText(QString("%1").arg(train_errors.size()));
-  ui_->label_test_error_val->setText(
-      QString("%1").arg(train_errors[train_errors.size()]));
+  ui_->label_test_error_val->setText(QString("%1").arg(
+      QString::number(train_errors[train_errors.size() - 1], 'f', 1)));
   ui_->label_test_error_val->repaint();
 }
 
 void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
-  int model_type;
-  if (ui_->matrix_model->isChecked()) {
-    model_type = MATRIX_MODEL;
-  } else {
-    model_type = GRAPH_MODEL;
-  }
-  if (controller.trainModel(model_type, epoch, hiden_layers)) {
-    updateLabel();
-    std::vector<double> train_errors = controller.getTrainErrors();
-    plotChart(train_errors);
-  }
+  controller.TrainModel(epoch, hiden_layers);
+  UpdateLabel();
+  std::vector<double> train_errors = controller.GetTrainErrors();
+  PlotChart(train_errors);
   // int count_epoch = 1;
   // while (count_epoch != epoch) {
   //   std::vector<double> train_errors = controller.getTrainErrors();
@@ -184,7 +193,7 @@ void MlpView::TrainModel() {
 
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
-  testResults testRes = controller.testModel(test_part);
+  testResults testRes = controller.TestModel(test_part);
   QString res =
       "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f', 1) +
       " %\nPrecision:\t" + QString::number(testRes.precision * 100, 'f', 1) +
@@ -200,10 +209,7 @@ void MlpView::TestModel() {
 void MlpView::RecognizeImage() {
   QPixmap pixMap =
       ui_->graphicsView->grab(ui_->graphicsView->sceneRect().toRect());
-
-  // pixMap.scaled(28, 28).save("/Users/nohoteth/mlp/file_pix.bmp");
   QImage image = pixMap.scaled(28, 28).toImage();
-  // QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
   stringstream letter;
   letter << "0";
   for (int x = 0; x < 28; x++) {
@@ -216,7 +222,7 @@ void MlpView::RecognizeImage() {
       letter << "," << red;
     }
   }
-  char recognizedletter = controller.recognizeImage(letter.str());
+  char recognizedletter = controller.RecognizeImage(letter.str());
   ui_->label_recognized_letter->setText(QString("%1").arg(recognizedletter));
   ui_->label_recognized_letter->repaint();
 }
@@ -230,14 +236,9 @@ void MlpView::CrossValidation() {
   int k_value = ui_->k_value->value();
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
-  int model_type;
-  if (ui_->matrix_model->isChecked()) {
-    model_type = MATRIX_MODEL;
-  } else {
-    model_type = GRAPH_MODEL;
-  }
   // вектор куда сохраняются значения тестовых частей для k-групп
-  std::vector<testResults> crossResultstest = controller.crossValidation(k_value, model_type, epoch, hiden_layers);
+  std::vector<testResults> crossResultstest =
+      controller.CrossValidation(k_value, epoch, hiden_layers);
   QString res = "";
   for (int i = 0; i < k_value; ++i) {
     res += "\n       Number of k group: " + QString::number(i + 1) + "\n"

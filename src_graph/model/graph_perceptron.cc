@@ -115,7 +115,7 @@ bool GraphPerceptron::save(const char* filename) {
 
   stringstream wts;
   for (size_t l = 1; l < count_layers_; l++) {
-    for (size_t n = 0; n < layers_[l].layer_[0].count_weight_; n++) {
+    for (int n = 0; n < layers_[l].layer_[0].count_weight_; n++) {
       for (size_t i = 0; i < layers_[l].GetCountNeuron(); i++) {
         wts << setw(12) << layers_[l].layer_[i].array_weight_[n];
       }
@@ -157,7 +157,7 @@ void GraphPerceptron::train(RowVector& input, RowVector& output) {
 void GraphPerceptron::forward(RowVector& input) {
   // set first layer input
   // заполняет первую подматрицу нейронов фактическим нормализованными значениями
-  for (int i = 0; i < layers_[0].GetCountNeuron() - 1; i++) {
+  for (size_t i = 0; i < layers_[0].GetCountNeuron() - 1; i++) {
     layers_[0].layer_[i].SetValue(input[i]);
   }
 
@@ -202,18 +202,19 @@ void GraphPerceptron::backward(RowVector& output) {
       double error = 0;
       if (l == number_out_layer_) {
           error = output[n] - layers_[l].layer_[n].GetValue();
-      } else {      
-          for (int arr = 0; arr < layers_[l+1].GetCountNeuron(); arr++) {
-            error += layers_[l + 1].layer_[arr].error_ *
+      } else {
+        for (size_t arr = 0; arr < layers_[l + 1].GetCountNeuron(); arr++) {
+          error += layers_[l + 1].layer_[arr].error_ *
                    layers_[l + 1].layer_[arr].array_weight_[n];
-          }
+        }
       }
       layers_[l].layer_[n].error_ = error;
     }
   }
-  for (int i = 1; i < mArchitecture.size(); i++) {
-    for (int row = 0; row < layers_[i].layer_[0].array_weight_.size(); row++) {
-      for (int col = 0; col < layers_[i].GetCountNeuron(); col++) {
+  for (size_t i = 1; i < mArchitecture.size(); i++) {
+    for (size_t row = 0; row < layers_[i].layer_[0].array_weight_.size();
+         row++) {
+      for (size_t col = 0; col < layers_[i].GetCountNeuron(); col++) {
         layers_[i].layer_[col].array_weight_[row] +=
           mLearningRate * layers_[i].layer_[col].error_ *
           layers_[i-1].layer_[row].value_ *
@@ -256,7 +257,7 @@ int GraphPerceptron::FindMaximum() {
 double GraphPerceptron::mse() {
   double err = 0;
   double z = 0;
-  for(int i = 0; i < layers_[number_out_layer_].layer_.size(); i++) {
+  for (size_t i = 0; i < layers_[number_out_layer_].layer_.size(); i++) {
     z = layers_[number_out_layer_].layer_[i].GetError();
     err += pow(z, 2);
   }

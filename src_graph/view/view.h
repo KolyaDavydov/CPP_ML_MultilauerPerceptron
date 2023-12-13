@@ -32,14 +32,14 @@ class MlpView : public QMainWindow {
   void RecognizeImage();
   void ClearPaint();
   void CrossValidation();
+  void SetModelType();
 
  private:
   Ui::MainWindow *ui_;
-  // MlpModel *model_;
   void SetupButtons();
   void SetupCharts();
-  void plotChart(std::vector<double> series_val);
-  void updateLabel();
+  void PlotChart(std::vector<double> series_val);
+  void UpdateLabel();
   paintScene *scene;  // Объявляем кастомную графическую сцену
 };
 }  // namespace s21
