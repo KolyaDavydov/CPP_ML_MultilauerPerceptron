@@ -52,6 +52,7 @@ void MlpView::SetupCharts() {
   chart->legend()->hide();
   chart->createDefaultAxes();
   chart->setBackgroundBrush(QBrush(QColor("black")));
+  // chart->setTitle("Test errors by epoch");
   ui_->chartView->setChart(chart);
 }
 
