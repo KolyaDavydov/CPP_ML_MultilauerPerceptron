@@ -46,39 +46,39 @@ class GraphPerceptron {
   GraphPerceptron(vector<int> architecture, double learningRate = LEARNING_RATE);
   void init(vector<int> architecture, double learningRate = LEARNING_RATE);
 
-  bool load(const char* filename);
+  bool Load(const char* filename);
 
-    // save to file
-  bool save(const char* file);
+  // Save to file
+  bool Save(const char* file);
 
-    // train the neural network given an input
-  void train(RowVector& input, RowVector& output);
+  // Train the neural network given an input
+  void Train(RowVector& input, RowVector& output);
 
-  // test the neural network given an input
-  void test(RowVector& input, RowVector& output);
+  // Test the neural network given an input
+  void Test(RowVector& input, RowVector& output);
 
-    // data forward propagation
-  void forward(RowVector& input);
-  double activation(double x);
+  // data Forward propagation
+  void Forward(RowVector& input);
+  double Activation(double x);
 
-  // backward propagation of errors
-  void backward(RowVector& output);
-   double activationDerivative(double x);
+  // Backward propagation of errors
+  void Backward(RowVector& output);
+  double ActivationDerivative(double x);
 
-  void confusionMatrix(RowVector*& precision, RowVector*& recall);
+  void ConfusionMatrix(RowVector*& precision, RowVector*& recall);
 
-  void evaluate(RowVector& output);
+  void Evaluate(RowVector& output);
 
   // get max output index
-  // int vote(double& value);
-  int vote(RowVector& v, double& value);
+  // int Vote(double& value);
+  int Vote(RowVector& v, double& value);
 
   void WeightsCalculation(int l, int n, double delta_weight);
 
     // get max output index
   int FindMaximum();
 
-  double mse();
+  double Mse();
 
   // //___________Create_And_Init_GraphPerceptron___________//
   // GraphPerceptron();

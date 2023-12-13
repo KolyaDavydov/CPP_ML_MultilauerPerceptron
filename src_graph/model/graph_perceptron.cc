@@ -55,7 +55,7 @@ void GraphPerceptron::init(vector<int> architecture, double learningRate) {
   mConfusion->setZero();
 }
 
-bool GraphPerceptron::load(const char* filename) {
+bool GraphPerceptron::Load(const char* filename) {
   mArchitecture.clear();
 
   ifstream file(filename);
@@ -107,7 +107,7 @@ bool GraphPerceptron::load(const char* filename) {
   return true;
 }
 
-bool GraphPerceptron::save(const char* filename) {
+bool GraphPerceptron::Save(const char* filename) {
   stringstream tplgy;
   for (auto it = mArchitecture.begin(), _end = mArchitecture.end(); it != _end;
        it++)
@@ -143,9 +143,9 @@ bool GraphPerceptron::save(const char* filename) {
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
 */
-void GraphPerceptron::train(RowVector& input, RowVector& output) {
-  forward(input); // заполняем матрицу нейронов
-  backward(output); // заполняем матрицу ошибок
+void GraphPerceptron::Train(RowVector& input, RowVector& output) {
+  Forward(input); // заполняем матрицу нейронов
+  Backward(output); // заполняем матрицу ошибок
 }
 
 /**
@@ -154,7 +154,7 @@ void GraphPerceptron::train(RowVector& input, RowVector& output) {
  * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего слоя нейронов
  * @param ссылка на вектор входных нейронов их 28*28+1
 */
-void GraphPerceptron::forward(RowVector& input) {
+void GraphPerceptron::Forward(RowVector& input) {
   // set first layer input
   // заполняет первую подматрицу нейронов фактическим нормализованными значениями
   for (size_t i = 0; i < layers_[0].GetCountNeuron() - 1; i++) {
@@ -176,7 +176,7 @@ void GraphPerceptron::forward(RowVector& input) {
         sum +=
             layers_[i - 1].GetNeuronValue(w) * layers_[i].GetWeightNeuron(n, w);
       }
-      layers_[i].SetNeuronValue(n + 1, activation(sum));
+      layers_[i].SetNeuronValue(n + 1, Activation(sum));
     }
   }
 }
@@ -186,7 +186,7 @@ void GraphPerceptron::forward(RowVector& input) {
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
 */
-double GraphPerceptron::activation(double x) { return 1.0 / (1.0 + exp(-x)); }
+double GraphPerceptron::Activation(double x) { return 1.0 / (1.0 + exp(-x)); }
 
 /**
  * @brief метод обратного распространения ошибки
@@ -195,7 +195,7 @@ double GraphPerceptron::activation(double x) { return 1.0 / (1.0 + exp(-x)); }
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
 */
-void GraphPerceptron::backward(RowVector& output) {
+void GraphPerceptron::Backward(RowVector& output) {
 
   for (size_t l = number_out_layer_; l != 0; l--) {
     for (size_t n = 0; n < layers_[l].GetCountNeuron(); n++) {
@@ -218,7 +218,7 @@ void GraphPerceptron::backward(RowVector& output) {
         layers_[i].layer_[col].array_weight_[row] +=
           mLearningRate * layers_[i].layer_[col].error_ *
           layers_[i-1].layer_[row].value_ *
-          activationDerivative(layers_[i].layer_[col].value_);
+            ActivationDerivative(layers_[i].layer_[col].value_);
       }
     }
   }
@@ -229,7 +229,7 @@ void GraphPerceptron::backward(RowVector& output) {
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
 */
-double GraphPerceptron::activationDerivative(double x) { return x * (1.0 - x); }
+double GraphPerceptron::ActivationDerivative(double x) { return x * (1.0 - x); }
 
 void GraphPerceptron::WeightsCalculation(int l, int n, double delta_weight) {
   for (size_t w = 0; w < layers_[l - 1].GetCountNeuron(); w++) {
@@ -254,7 +254,7 @@ int GraphPerceptron::FindMaximum() {
 }
 
 // mean square error
-double GraphPerceptron::mse() {
+double GraphPerceptron::Mse() {
   double err = 0;
   double z = 0;
   for (size_t i = 0; i < layers_[number_out_layer_].layer_.size(); i++) {
@@ -265,15 +265,15 @@ double GraphPerceptron::mse() {
   return err;
 }
 
-void GraphPerceptron::test(RowVector& input, RowVector& output) {
-  forward(input);
+void GraphPerceptron::Test(RowVector& input, RowVector& output) {
+  Forward(input);
   // calculate last layer errors
   for (int i = 0; i < output.size(); i++) {
     layers_[number_out_layer_].layer_[i].error_ = output[i] - layers_[number_out_layer_].layer_[i].GetValue();
   }
 }
 
-void GraphPerceptron::confusionMatrix(RowVector*& precision, RowVector*& recall) {
+void GraphPerceptron::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
   int rows = (int)mConfusion->rows();
   int cols = (int)mConfusion->cols();
 
@@ -315,13 +315,13 @@ void GraphPerceptron::confusionMatrix(RowVector*& precision, RowVector*& recall)
   }
 }
 
-void GraphPerceptron::evaluate(RowVector& output) {
+void GraphPerceptron::Evaluate(RowVector& output) {
   double desired = 0, actual = 0;
   RowVector mNeurons(output.size());
   for (int i = 0; i < output.size(); i++) {
     mNeurons(i) = (layers_[number_out_layer_].layer_[i].value_);
   }
-  mConfusion->coeffRef(vote(output, desired), vote(mNeurons, actual))++;
+  mConfusion->coeffRef(Vote(output, desired), Vote(mNeurons, actual))++;
 }
 
 // int GraphPerceptron::vote(double& value) {
@@ -330,7 +330,7 @@ void GraphPerceptron::evaluate(RowVector& output) {
 //   return vote(*it, value);
 // }
 
-int GraphPerceptron::vote(RowVector& v, double& value) {
+int GraphPerceptron::Vote(RowVector& v, double& value) {
   int index = 0;
   for (int i = 1; i < v.cols(); i++)
     if (v[i] > v[index]) index = i;

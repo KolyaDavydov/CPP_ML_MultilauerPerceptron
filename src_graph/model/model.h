@@ -1,6 +1,7 @@
 #ifndef CPP7_MLP_1_SRC_MODEL_MODEL_H_
 #define CPP7_MLP_1_SRC_MODEL_MODEL_H_
 
+#include <QElapsedTimer>
 #include <fstream>
 #include <random>
 #include <string>
@@ -39,7 +40,7 @@ class MlpModel {
   void Train(GraphPerceptron &net, int epoch);
   void Test(GraphPerceptron &net, int test_part);
   bool TestModel(int test_part);
-  bool TrainModel(int epoch, int hiden_layers);
+  void TrainModel(int epoch, int hiden_layers);
   std::vector<testResults> CrossValidation(int k_value, int epoch,
                                            int hiden_layers);
   void Evaluate(GraphPerceptron &net);

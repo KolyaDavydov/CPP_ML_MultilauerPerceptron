@@ -27,8 +27,8 @@ class MlpController {
 
   bool SaveModel(std::string filename) { return model_->SaveModel(filename); }
 
-  bool TrainModel(int epoch, int hiden_layers) {
-    return model_->TrainModel(epoch, hiden_layers);
+  void TrainModel(int epoch, int hiden_layers) {
+    model_->TrainModel(epoch, hiden_layers);
   }
 
   char RecognizeImage(std::string letter) {

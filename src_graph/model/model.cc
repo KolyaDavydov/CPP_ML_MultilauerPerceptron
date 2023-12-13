@@ -1,7 +1,5 @@
 #include "model.h"
 
-#include <QElapsedTimer>
-#include <iostream>
 #define CMD_RESET "\x1b[0m"
 #define CMD_RED "\x1b[31;1m"
 #define CMD_GREEN "\x1b[32;1m"
@@ -19,9 +17,9 @@ void MlpModel::OpenModel(std::string filename) {
   file_.open(filename);
   if (file_.is_open()) {
     if (model_type_ == GRAPH_MODEL) {
-      is_graph_model_valid_ = graph_net_.load(filename.c_str());
+      is_graph_model_valid_ = graph_net_.Load(filename.c_str());
     } else {
-      is_matrix_model_valid_ = matrix_net_.load(filename.c_str());
+      is_matrix_model_valid_ = matrix_net_.Load(filename.c_str());
     }
   }
 };
@@ -105,7 +103,7 @@ void MlpModel::OpenTestDataset(std::string filepath) {
  * @param filepath путь к файлу .txt
  */
 bool MlpModel::SaveModel(std::string filename) {
-  return graph_net_.save(filename.c_str());
+  return graph_net_.Save(filename.c_str());
 };
 
 /**
@@ -157,18 +155,18 @@ bool MlpModel::Train(NeuralNetwork &net, std::string line, int serial,
     output.coeffRef(0, c) = c == desired ? 1 : 0;
 
   if (testing) {
-    net.test(*input, output);
-    net.evaluate(output);
+    net.Test(*input, output);
+    net.Evaluate(output);
   } else
-    net.train(*input, output);
+    net.Train(*input, output);
   delete input;
 
   double value = 0;
-  int actual = net.vote(value);
+  int actual = net.Vote(value);
   cout << serial << ' ' << char(desired + 65) << " >> ";
   if (desired != actual)
     cout << CMD_RED << char(actual + 65) << CMD_RESET " ("
-         << value - net.output(desired) << ")" << endl;
+         << value - net.Output(desired) << ")" << endl;
   else
     cout << CMD_GREEN << char(actual + 65) << CMD_RESET << endl;
 
@@ -184,12 +182,12 @@ void MlpModel::Train(NeuralNetwork &net, int epoch) {
   for (int trial = 0; trial < epoch; trial++) {
     serial = 0;
     success = 0;
-    for (size_t n = 0; n < dataset_size_; n++) {
-      if (Train(net, dataset_[n].c_str(), ++serial, false)) success++;
-      cost += net.mse();
-    }
     std::default_random_engine rng_{};
     std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
+    for (size_t n = 0; n < dataset_size_; n++) {
+      if (Train(net, dataset_[n].c_str(), ++serial, false)) success++;
+      cost += net.Mse();
+    }
     train_errors_.push_back((double)(serial - success) / serial * 100);
   }
   double error = (double)(serial - success) / serial * 100;
@@ -209,7 +207,7 @@ void MlpModel::Test(NeuralNetwork &net, int test_part) {
   int serial = 0, success = 0;
   for (size_t n = 0; n < test_dataset_size_ * test_part / 100; n++) {
     if (Train(net, test_dataset_[n].c_str(), ++serial, true)) success++;
-    cost += net.mse();
+    cost += net.Mse();
   }
   double error = (double)(serial - success) / serial * 100;
   test_results_.accuracy = 100 - error;
@@ -223,7 +221,7 @@ void MlpModel::Test(NeuralNetwork &net, int test_part) {
 
 void MlpModel::Evaluate(NeuralNetwork &net) {
   RowVector *precision, *recall;
-  net.confusionMatrix(precision, recall);
+  net.ConfusionMatrix(precision, recall);
 
   int numValues = 0;  // количество букв в тестах (может быть не равно 26)
   for (int i = 0; i < precision->size(); i++) {
@@ -274,10 +272,10 @@ bool MlpModel::Train(GraphPerceptron &net, std::string line, int serial,
     output.coeffRef(0, c) = c == desired ? 1 : 0;
 
   if (testing) {
-    net.test(*input, output);
-    net.evaluate(output);
+    net.Test(*input, output);
+    net.Evaluate(output);
   } else
-    net.train(*input, output);
+    net.Train(*input, output);
   delete input;
 
   // double value = 0;
@@ -307,11 +305,11 @@ void MlpModel::RecognizeImage(std::string letter) {
     for (int c = 0; c < LETTERS; c++)
       output.coeffRef(0, c) = c == desired ? 1 : 0;
     if (model_type_ == GRAPH_MODEL) {
-      graph_net_.test(*input, output);
-      graph_net_.evaluate(output);
+      graph_net_.Test(*input, output);
+      graph_net_.Evaluate(output);
     } else {
-      matrix_net_.test(*input, output);
-      matrix_net_.evaluate(output);
+      matrix_net_.Test(*input, output);
+      matrix_net_.Evaluate(output);
     }
     delete input;
 
@@ -320,7 +318,7 @@ void MlpModel::RecognizeImage(std::string letter) {
       actual = graph_net_.FindMaximum() + 65;
     } else {
       double value = 0;
-      actual = matrix_net_.vote(value) + 65;
+      actual = matrix_net_.Vote(value) + 65;
     }
     cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
     recognizedLetter_ = actual;
@@ -332,7 +330,7 @@ void MlpModel::RecognizeImage(std::string letter) {
  * @param epoch количество эпох
  * @param hiden_layers количество скрытых слоев
  */
-bool MlpModel::TrainModel(int epoch, int hiden_layers) {
+void MlpModel::TrainModel(int epoch, int hiden_layers) {
   vector<int> init_vector{};
   if (!is_dataset_loaded_) {
     cout << "Dataset not loaded" << endl;
@@ -360,14 +358,12 @@ bool MlpModel::TrainModel(int epoch, int hiden_layers) {
       // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
       // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
       Train(graph_net_, epoch);
-      return true;
     } else {
       matrix_net_.init(init_vector, 0.05);
       Train(matrix_net_, epoch);
       // cout << "Model in development" << endl;
     }
   }
-  return false;
 }
 
 /**
@@ -417,7 +413,7 @@ void MlpModel::Train(GraphPerceptron &net, int epoch) {
   for (int trial = 0; trial < epoch; trial++) {
     for (size_t n = 0; n < dataset_size_; n++) {
       if (Train(net, dataset_[n].c_str(), ++serial, false)) success++;
-      cost += net.mse();
+      cost += net.Mse();
     }
     train_errors_.push_back((double)(serial - success) / serial * 100);
   }
@@ -441,7 +437,7 @@ void MlpModel::Test(GraphPerceptron &net, int test_part) {
   int serial = 0, success = 0;
   for (size_t n = 0; n < test_dataset_size_ * test_part / 100; n++) {
     if (Train(net, test_dataset_[n].c_str(), ++serial, true)) success++;
-    cost += net.mse();
+    cost += net.Mse();
   }
   double error = (double)(serial - success) / serial * 100;
   test_results_.accuracy = 100 - error;
@@ -459,7 +455,7 @@ void MlpModel::Test(GraphPerceptron &net, int test_part) {
  */
 void MlpModel::Evaluate(GraphPerceptron &net) {
   RowVector *precision, *recall;
-  net.confusionMatrix(precision, recall);
+  net.ConfusionMatrix(precision, recall);
 
   int numValues = 0;  // количество букв в тестах (может быть не равно 26)
   for (int i = 0; i < precision->size(); i++) {
@@ -594,14 +590,14 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
     test_dataset_size_ = test_dataset_.size();
     if (model_type_ == GRAPH_MODEL) {
       Train(graph_parts[i], epoch);  // обучение
-      graph_parts[i].save(tmp_model);  // сохранение модели в временный файл
-      graph_parts[i].load(tmp_model);  // загрузка модели из временного файла
+      graph_parts[i].Save(tmp_model);  // сохранение модели в временный файл
+      graph_parts[i].Load(tmp_model);  // загрузка модели из временного файла
       Test(graph_parts[i], 100);  // тестирвоание на загруженной модели
       Evaluate(graph_parts[i]);  // определение метрик после тестов
     } else {
       Train(matrix_parts[i], epoch);  // обучение
-      matrix_parts[i].save(tmp_model);  // сохранение модели в временный файл
-      matrix_parts[i].load(tmp_model);  // загрузка модели из временного файла
+      matrix_parts[i].Save(tmp_model);  // сохранение модели в временный файл
+      matrix_parts[i].Load(tmp_model);  // загрузка модели из временного файла
       Test(matrix_parts[i], 100);  // тестирвоание на загруженной модели
       Evaluate(matrix_parts[i]);  // определение метрик после тестов
     }
@@ -611,9 +607,9 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
     // если она выше, то как бы загружаем модель в основной перцептрон (net_)
     if (results[i].accuracy > accuray_k) {
       if (model_type_ == GRAPH_MODEL) {
-        graph_net_.load(tmp_model);
+        graph_net_.Load(tmp_model);
       } else {
-        matrix_net_.load(tmp_model);
+        matrix_net_.Load(tmp_model);
       }
       accuray_k = results[i].accuracy;
     }

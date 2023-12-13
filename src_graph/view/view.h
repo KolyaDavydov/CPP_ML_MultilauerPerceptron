@@ -2,7 +2,11 @@
 #define VIEW_H
 
 #include <QFileDialog>
+#include <QLineSeries>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QTimer>
+#include <QtCharts>
 
 #include "../controller/controller.h"
 #include "paintscene.h"

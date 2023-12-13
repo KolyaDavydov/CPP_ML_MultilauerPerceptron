@@ -1,11 +1,4 @@
 #include "view.h"
-
-#include <QLineSeries>
-#include <QMessageBox>
-#include <QTimer>
-#include <QtCharts>
-#include <iostream>
-
 #include "ui_view.h"
 
 namespace s21 {
@@ -49,8 +42,8 @@ void MlpView::SetupButtons() {
 }
 
 void MlpView::SetupCharts() {
-  scene = new paintScene();  // Инициализируем графическую сцену
-  ui_->graphicsView->setScene(scene);  // Устанавливаем графическую сцену
+  scene = new paintScene();
+  ui_->graphicsView->setScene(scene);
   ui_->graphicsView->setSceneRect(scene->sceneRect());
   scene->setSceneRect(0, 0, ui_->graphicsView->width(),
                       ui_->graphicsView->height());
