@@ -170,9 +170,11 @@ void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.TrainModel(epoch, hiden_layers);
-  UpdateLabel();
-  std::vector<double> train_errors = controller.GetTrainErrors();
-  PlotChart(train_errors);
+  if (controller.GetModelValid()) {
+    UpdateLabel();
+    std::vector<double> train_errors = controller.GetTrainErrors();
+    PlotChart(train_errors);
+  }
   // int count_epoch = 1;
   // while (count_epoch != epoch) {
   //   std::vector<double> train_errors = controller.getTrainErrors();

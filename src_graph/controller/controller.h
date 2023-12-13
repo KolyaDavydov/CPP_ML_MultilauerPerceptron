@@ -36,6 +36,8 @@ class MlpController {
     return model_->GetRecognized();
   }
 
+  bool GetModelValid() { return model_->GetModelValid(); }
+
   testResults TestModel(int test_part) {
     model_->TestModel(test_part);
     return model_->GetTestResults();
