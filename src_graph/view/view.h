@@ -40,6 +40,7 @@ class MlpView : public QMainWindow {
 
  private:
   Ui::MainWindow *ui_;
+  QString error_msg_ = "";
   void SetupButtons();
   void SetupCharts();
   void PlotChart(std::vector<double> series_val);

@@ -32,6 +32,8 @@ bool MlpModel::GetModelValid() {
   return (is_graph_model_valid_ || is_matrix_model_valid_);
 }
 
+QString MlpModel::GetErrorMsg() { return error_msg_; }
+
 void MlpModel::SetModelType(int model_type) { model_type_ = model_type; }
 
 /**
@@ -119,7 +121,6 @@ void MlpModel::ReadLetter(const std::string line, int *desired,
   std::string substring;
   std::stringstream ss;
   data = new RowVector(width * height);
-  // split CSV by commas
   ss.str(line);
   getline(ss, substring, ',');
   *desired = atoi(substring.c_str()) - 1;
@@ -178,7 +179,6 @@ void MlpModel::Train(NeuralNetwork &net, int epoch) {
   int serial = 0;   // номер строки датасета (буквы)
   int success = 0;  // для каждой строки датасета (буквы) успешное определение
   train_errors_.clear();
-  // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
     serial = 0;
     success = 0;
@@ -198,8 +198,6 @@ void MlpModel::Train(NeuralNetwork &net, int epoch) {
   cout << "error\t" << error << "%" << endl;
   cout << endl;
   if (error < 30) is_matrix_model_valid_ = true;
-
-  // net.save("params.txt");
 }
 
 void MlpModel::Test(NeuralNetwork &net, int test_part) {
@@ -296,7 +294,7 @@ void MlpModel::RecognizeImage(std::string letter) {
                 // число строки)
   ReadLetter(letter, &desired, input);
   if (!is_matrix_model_valid_ && !is_graph_model_valid_) {
-    cout << "Model not loaded" << endl;
+    error_msg_ = "Model not loaded";
   } else {
     // создаем вектор-шаблон длиной 26 (количество букв)
     // который заподняем нулями, кроме элемента находящегося под индексом
@@ -322,6 +320,7 @@ void MlpModel::RecognizeImage(std::string letter) {
     }
     cout << CMD_GREEN << char(actual) << CMD_RESET << endl;
     recognizedLetter_ = actual;
+    error_msg_ = "";
   }
 };
 
@@ -333,7 +332,7 @@ void MlpModel::RecognizeImage(std::string letter) {
 void MlpModel::TrainModel(int epoch, int hiden_layers) {
   vector<int> init_vector{};
   if (!is_dataset_loaded_) {
-    cout << "Dataset not loaded" << endl;
+    error_msg_ = "Dataset not loaded";
   } else {
     switch (hiden_layers) {  // количество нейронов подобрано эмпирически
       case 2:
@@ -361,7 +360,7 @@ void MlpModel::TrainModel(int epoch, int hiden_layers) {
     } else {
       matrix_net_.init(init_vector, 0.05);
       Train(matrix_net_, epoch);
-      // cout << "Model in development" << endl;
+      error_msg_ = "";
     }
   }
 }
@@ -374,11 +373,11 @@ void MlpModel::TrainModel(int epoch, int hiden_layers) {
 bool MlpModel::TestModel(int test_part) {
   bool result = false;
   if (!is_test_dataset_loaded_) {
-    cout << "Test_dataset not loaded" << endl;
+    error_msg_ = "Test_dataset not loaded";
   } else if (!is_matrix_model_valid_ && !is_graph_model_valid_) {
-    cout << "Model not loaded" << endl;
+    error_msg_ = "Model not loaded";
   } else if (test_part == 0) {
-    cout << "Nothing to test, test part ==0" << endl;
+    error_msg_ = "Nothing to test, test part ==0";
   } else {
     QElapsedTimer t;
     t.start();
@@ -394,7 +393,7 @@ bool MlpModel::TestModel(int test_part) {
     }
     result = true;
     test_results_.runtime = t.elapsed();
-    std::cout << "Operation in testModel " << t.elapsed() << "ms" << endl;
+    error_msg_ = "";
   }
   return result;
 }
@@ -516,7 +515,7 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
   // обучении
   vector<int> init_vector{};
   if (!is_dataset_loaded_) {
-    cout << "Dataset not loaded" << endl;
+    error_msg_ = "Dataset not loaded";
   } else {
     switch (hiden_layers) {  // количество нейронов подобрано эмпирически
       case 2:
@@ -613,6 +612,7 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
       }
       accuray_k = results[i].accuracy;
     }
+    error_msg_ = "";
   }
   return results;
 };

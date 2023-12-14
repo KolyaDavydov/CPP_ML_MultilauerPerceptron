@@ -134,9 +134,11 @@ void MlpView::OpenBmp() {
     std::string file_name_ = file_name.toStdString();
     image.load(file_name_.c_str());
     if (image.height() < 28 || image.width() < 28 || image.height() > 512 ||
-        image.width() > 512)
-      std::cout << "Too small or too large image" << std::endl;
-    else {
+        image.width() > 512) {
+      QMessageBox msgBox;
+      msgBox.setText("Too small or too large image");
+      msgBox.exec();
+    } else {
       QImage grayscale = image.convertToFormat(QImage::Format_Grayscale8);
       QImage small = grayscale.scaled(28, 28, Qt::KeepAspectRatio);
       stringstream letter;
@@ -149,12 +151,19 @@ void MlpView::OpenBmp() {
         }
       }
       char recognizedletter = controller.RecognizeImage(letter.str());
-      ui_->label_recognized_letter->setText(
-          QString("%1").arg(recognizedletter));
-      ui_->label_recognized_letter->repaint();
-      scene->clear();
-      scene->addPixmap(QPixmap::fromImage(grayscale));
-      ui_->graphicsView->setScene(scene);
+      error_msg_ = controller.GetErrorMsg();
+      if (error_msg_ != "") {
+        QMessageBox msgBox;
+        msgBox.setText(error_msg_);
+        msgBox.exec();
+      } else {
+        ui_->label_recognized_letter->setText(
+            QString("%1").arg(recognizedletter));
+        ui_->label_recognized_letter->repaint();
+        scene->clear();
+        scene->addPixmap(QPixmap::fromImage(grayscale));
+        ui_->graphicsView->setScene(scene);
+      }
     }
   }
 }
@@ -171,10 +180,17 @@ void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.TrainModel(epoch, hiden_layers);
-  if (controller.GetModelValid()) {
-    UpdateLabel();
-    std::vector<double> train_errors = controller.GetTrainErrors();
-    PlotChart(train_errors);
+  error_msg_ = controller.GetErrorMsg();
+  if (error_msg_ != "") {
+    QMessageBox msgBox;
+    msgBox.setText(error_msg_);
+    msgBox.exec();
+  } else {
+    if (controller.GetModelValid()) {
+      UpdateLabel();
+      std::vector<double> train_errors = controller.GetTrainErrors();
+      PlotChart(train_errors);
+    }
   }
   // int count_epoch = 1;
   // while (count_epoch != epoch) {
@@ -190,16 +206,23 @@ void MlpView::TrainModel() {
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
   testResults testRes = controller.TestModel(test_part);
-  QString res =
-      "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f', 1) +
-      " %\nPrecision:\t" + QString::number(testRes.precision * 100, 'f', 1) +
-      " %\nRecall:\t" + QString::number(testRes.recall * 100, 'f', 1) +
-      " %\nF-measure:\t" + QString::number(testRes.fmeasure * 100, 'f', 1) +
-      " %\nTest time:\t" + QString::number(testRes.runtime / 1000, 'f', 1) +
-      " s";
-  QMessageBox msgBox;
-  msgBox.setText(res);
-  msgBox.exec();
+  error_msg_ = controller.GetErrorMsg();
+  if (error_msg_ != "") {
+    QMessageBox msgBox;
+    msgBox.setText(error_msg_);
+    msgBox.exec();
+  } else {
+    QString res =
+        "Test results\nAccuracy:\t" +
+        QString::number(testRes.accuracy, 'f', 1) + " %\nPrecision:\t" +
+        QString::number(testRes.precision * 100, 'f', 1) + " %\nRecall:\t" +
+        QString::number(testRes.recall * 100, 'f', 1) + " %\nF-measure:\t" +
+        QString::number(testRes.fmeasure * 100, 'f', 1) + " %\nTest time:\t" +
+        QString::number(testRes.runtime / 1000, 'f', 1) + " s";
+    QMessageBox msgBox;
+    msgBox.setText(res);
+    msgBox.exec();
+  }
 };
 
 void MlpView::RecognizeImage() {
@@ -219,8 +242,15 @@ void MlpView::RecognizeImage() {
     }
   }
   char recognizedletter = controller.RecognizeImage(letter.str());
-  ui_->label_recognized_letter->setText(QString("%1").arg(recognizedletter));
-  ui_->label_recognized_letter->repaint();
+  error_msg_ = controller.GetErrorMsg();
+  if (error_msg_ != "") {
+    QMessageBox msgBox;
+    msgBox.setText(error_msg_);
+    msgBox.exec();
+  } else {
+    ui_->label_recognized_letter->setText(QString("%1").arg(recognizedletter));
+    ui_->label_recognized_letter->repaint();
+  }
 }
 
 void MlpView::ClearPaint() {
