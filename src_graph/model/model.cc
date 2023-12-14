@@ -16,11 +16,11 @@ void MlpModel::OpenModel(std::string filename) {
   is_graph_model_valid_ = is_matrix_model_valid_ = false;
   file_.open(filename);
   if (file_.is_open()) {
-    if (model_type_ == GRAPH_MODEL) {
-      is_graph_model_valid_ = graph_net_.Load(filename.c_str());
-    } else {
-      is_matrix_model_valid_ = matrix_net_.Load(filename.c_str());
-    }
+    // if (model_type_ == GRAPH_MODEL) {
+    is_graph_model_valid_ = graph_net_.Load(filename.c_str());
+    // } else {
+    is_matrix_model_valid_ = matrix_net_.Load(filename.c_str());
+    // }
   }
 };
 
@@ -105,7 +105,17 @@ void MlpModel::OpenTestDataset(std::string filepath) {
  * @param filepath путь к файлу .txt
  */
 bool MlpModel::SaveModel(std::string filename) {
-  return graph_net_.Save(filename.c_str());
+  error_msg_ = "";
+  if (model_type_ == GRAPH_MODEL && is_graph_model_valid_) {
+    return graph_net_.Save(filename.c_str());
+  } else {
+    if (is_matrix_model_valid_) {
+      return matrix_net_.Save(filename.c_str());
+    } else {
+      error_msg_ = "Model not loaded";
+      return false;
+    }
+  }
 };
 
 /**
@@ -533,86 +543,85 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
       default:
         init_vector = {28 * 28, 64, 48, LETTERS};
     }
-  }
-  // создаем вектор содержащий объекты перцептронов в количестве = k_value
-  // и каждый объект инициализируем соответствующей архитектурой
-  std::vector<GraphPerceptron> graph_parts(
-      k_value);  // будет храниться несколько объектов перцептронов в
-                 // количестве k_value
-  std::vector<NeuralNetwork> matrix_parts(k_value);
-  for (int i = 0; i < k_value; ++i) {
-    if (model_type_ == GRAPH_MODEL) {
-      graph_parts[i].init(init_vector, 0.01);
-    } else {
-      matrix_parts[i].init(init_vector, 0.01);
-    }
-  }
-
-  // перемешиваем исходный датасет
-  std::default_random_engine rng_{};
-  std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
-  // исходный датасет разбиваем на k_value не пересекающихся частей
-  // и каждая часть будет находится в векторе datasets
-  std::vector<std::vector<std::string>> datasets(k_value);
-  int part_size = (int)(dataset_size_ / k_value);  // размер части датасета
-
-  // процесс разбиения исходного датасета и помещения каждой части в datasets
-  auto iter_begin = dataset_.begin();
-  auto iter_end = dataset_.begin() + part_size;
-  for (int i = 0; i < k_value; i++) {
-    datasets[i].insert(datasets[i].begin(), iter_begin, iter_end);
-    iter_begin = iter_end;
-    iter_end = iter_begin + part_size;
-  }
-
-  double accuray_k = 0.0;  // Будет хранить показатель точности для каждой
-                           // итерации и сравниваться с предыдущей
-  const char *tmp_model = "tmp_model.txt";  // для временного хранения модели
-  for (int i = 0; i < k_value; i++) {
-    // при каждой иттерации мы как бы обновляем значения параметров текущего
-    // класса
-    this->dataset_.clear();
-    this->test_dataset_.clear();
-
-    // создаем тестовый датасет - одна часть из набора
-    this->test_dataset_ = datasets[i];
-    // создаем тренировочный датасет - остальные части кроме одной,
-    auto iter = this->dataset_.cbegin();
-    for (int j = 0; j < k_value; ++j) {
-      if (j != i) {
-        dataset_.insert(iter, datasets[j].begin(), datasets[j].end());
-      }
-    }
-
-    // Обновляем размеры текущих датасетов
-    dataset_size_ = dataset_.size();
-    test_dataset_size_ = test_dataset_.size();
-    if (model_type_ == GRAPH_MODEL) {
-      Train(graph_parts[i], epoch);  // обучение
-      graph_parts[i].Save(tmp_model);  // сохранение модели в временный файл
-      graph_parts[i].Load(tmp_model);  // загрузка модели из временного файла
-      Test(graph_parts[i], 100);  // тестирвоание на загруженной модели
-      Evaluate(graph_parts[i]);  // определение метрик после тестов
-    } else {
-      Train(matrix_parts[i], epoch);  // обучение
-      matrix_parts[i].Save(tmp_model);  // сохранение модели в временный файл
-      matrix_parts[i].Load(tmp_model);  // загрузка модели из временного файла
-      Test(matrix_parts[i], 100);  // тестирвоание на загруженной модели
-      Evaluate(matrix_parts[i]);  // определение метрик после тестов
-    }
-    results.push_back(
-        this->test_results_);  // запихиваем полученные метрики в вектор
-    // сравниваем метрику accuracy c предыдущей иттерацией
-    // если она выше, то как бы загружаем модель в основной перцептрон (net_)
-    if (results[i].accuracy > accuray_k) {
+    // создаем вектор содержащий объекты перцептронов в количестве = k_value
+    // и каждый объект инициализируем соответствующей архитектурой
+    std::vector<GraphPerceptron> graph_parts(
+        k_value);  // будет храниться несколько объектов перцептронов в
+                   // количестве k_value
+    std::vector<NeuralNetwork> matrix_parts(k_value);
+    for (int i = 0; i < k_value; ++i) {
       if (model_type_ == GRAPH_MODEL) {
-        graph_net_.Load(tmp_model);
+        graph_parts[i].init(init_vector, 0.01);
       } else {
-        matrix_net_.Load(tmp_model);
+        matrix_parts[i].init(init_vector, 0.01);
       }
-      accuray_k = results[i].accuracy;
     }
-    error_msg_ = "";
+    // перемешиваем исходный датасет
+    std::default_random_engine rng_{};
+    std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
+    // исходный датасет разбиваем на k_value не пересекающихся частей
+    // и каждая часть будет находится в векторе datasets
+    std::vector<std::vector<std::string>> datasets(k_value);
+    int part_size = (int)(dataset_size_ / k_value);  // размер части датасета
+
+    // процесс разбиения исходного датасета и помещения каждой части в datasets
+    auto iter_begin = dataset_.begin();
+    auto iter_end = dataset_.begin() + part_size;
+    for (int i = 0; i < k_value; i++) {
+      datasets[i].insert(datasets[i].begin(), iter_begin, iter_end);
+      iter_begin = iter_end;
+      iter_end = iter_begin + part_size;
+    }
+
+    double accuray_k = 0.0;  // Будет хранить показатель точности для каждой
+                             // итерации и сравниваться с предыдущей
+    const char *tmp_model = "tmp_model.txt";  // для временного хранения модели
+    for (int i = 0; i < k_value; i++) {
+      // при каждой иттерации мы как бы обновляем значения параметров текущего
+      // класса
+      this->dataset_.clear();
+      this->test_dataset_.clear();
+
+      // создаем тестовый датасет - одна часть из набора
+      this->test_dataset_ = datasets[i];
+      // создаем тренировочный датасет - остальные части кроме одной,
+      auto iter = this->dataset_.cbegin();
+      for (int j = 0; j < k_value; ++j) {
+        if (j != i) {
+          dataset_.insert(iter, datasets[j].begin(), datasets[j].end());
+        }
+      }
+
+      // Обновляем размеры текущих датасетов
+      dataset_size_ = dataset_.size();
+      test_dataset_size_ = test_dataset_.size();
+      if (model_type_ == GRAPH_MODEL) {
+        Train(graph_parts[i], epoch);  // обучение
+        graph_parts[i].Save(tmp_model);  // сохранение модели в временный файл
+        graph_parts[i].Load(tmp_model);  // загрузка модели из временного файла
+        Test(graph_parts[i], 100);  // тестирвоание на загруженной модели
+        Evaluate(graph_parts[i]);  // определение метрик после тестов
+      } else {
+        Train(matrix_parts[i], epoch);  // обучение
+        matrix_parts[i].Save(tmp_model);  // сохранение модели в временный файл
+        matrix_parts[i].Load(tmp_model);  // загрузка модели из временного файла
+        Test(matrix_parts[i], 100);  // тестирвоание на загруженной модели
+        Evaluate(matrix_parts[i]);  // определение метрик после тестов
+      }
+      results.push_back(
+          this->test_results_);  // запихиваем полученные метрики в вектор
+      // сравниваем метрику accuracy c предыдущей иттерацией
+      // если она выше, то как бы загружаем модель в основной перцептрон (net_)
+      if (results[i].accuracy > accuray_k) {
+        if (model_type_ == GRAPH_MODEL) {
+          graph_net_.Load(tmp_model);
+        } else {
+          matrix_net_.Load(tmp_model);
+        }
+        accuray_k = results[i].accuracy;
+      }
+      error_msg_ = "";
+    }
   }
   return results;
 };

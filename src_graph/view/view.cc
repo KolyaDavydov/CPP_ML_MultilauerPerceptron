@@ -100,11 +100,17 @@ void MlpView::OpenModel() {
 }
 
 void MlpView::SaveModel() {
-  QString file_name = QFileDialog::getSaveFileName(
-      this, tr("Save model"), QDir::homePath(), "TXT-files (*.txt)");
-  if (!file_name.isEmpty() && !file_name.isNull()) {
-    std::string file_name_ = file_name.toStdString();
-    controller.SaveModel(file_name_);
+  if (!controller.GetModelValid()) {
+    QMessageBox msgBox;
+    msgBox.setText("Model not loaded");
+    msgBox.exec();
+  } else {
+    QString file_name = QFileDialog::getSaveFileName(
+        this, tr("Save model"), QDir::homePath(), "TXT-files (*.txt)");
+    if (!file_name.isEmpty() && !file_name.isNull()) {
+      std::string file_name_ = file_name.toStdString();
+      controller.SaveModel(file_name_);
+    }
   }
 }
 
@@ -265,25 +271,38 @@ void MlpView::CrossValidation() {
   // вектор куда сохраняются значения тестовых частей для k-групп
   std::vector<testResults> crossResultstest =
       controller.CrossValidation(k_value, epoch, hiden_layers);
-  QString res = "";
-  for (int i = 0; i < k_value; ++i) {
-    res += "\n       Number of k group: " + QString::number(i + 1) + "\n"
-      "Test results\nAccuracy:\t" + QString::number(crossResultstest[i].accuracy, 'f', 1) +
-      " %\nPrecision:\t" + QString::number(crossResultstest[i].precision * 100, 'f', 1) +
-      " %\nRecall:\t" + QString::number(crossResultstest[i].recall * 100, 'f', 1) +
-      " %\nF-measure:\t" + QString::number(crossResultstest[i].fmeasure * 100, 'f', 1);   
+  error_msg_ = controller.GetErrorMsg();
+  if (error_msg_ != "") {
+    QMessageBox msgBox;
+    msgBox.setText(error_msg_);
+    msgBox.exec();
+  } else {
+    QString res = "";
+    for (int i = 0; i < k_value; ++i) {
+      res += "\n       Number of k group: " + QString::number(i + 1) +
+             "\n"
+             "Test results\nAccuracy:\t" +
+             QString::number(crossResultstest[i].accuracy, 'f', 1) +
+             " %\nPrecision:\t" +
+             QString::number(crossResultstest[i].precision * 100, 'f', 1) +
+             " %\nRecall:\t" +
+             QString::number(crossResultstest[i].recall * 100, 'f', 1) +
+             " %\nF-measure:\t" +
+             QString::number(crossResultstest[i].fmeasure * 100, 'f', 1);
+    }
+
+    // testResults testRes = controller.testModel(test_part);
+    // QString res =
+    //     "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f',
+    //     1) + " %\nPrecision:\t" + QString::number(testRes.precision * 100,
+    //     'f', 1) + " %\nRecall:\t" + QString::number(testRes.recall * 100,
+    //     'f', 1) + " %\nF-measure:\t" + QString::number(testRes.fmeasure *
+    //     100, 'f', 1) + " %\nTest time:\t" + QString::number(testRes.runtime /
+    //     1000, 'f', 1) + " s";
+    QMessageBox msgBox;
+    msgBox.setText(res);
+    msgBox.exec();
   }
-  // testResults testRes = controller.testModel(test_part);
-  // QString res =
-  //     "Test results\nAccuracy:\t" + QString::number(testRes.accuracy, 'f', 1) +
-  //     " %\nPrecision:\t" + QString::number(testRes.precision * 100, 'f', 1) +
-  //     " %\nRecall:\t" + QString::number(testRes.recall * 100, 'f', 1) +
-  //     " %\nF-measure:\t" + QString::number(testRes.fmeasure * 100, 'f', 1) +
-  //     " %\nTest time:\t" + QString::number(testRes.runtime / 1000, 'f', 1) +
-  //     " s";
-  QMessageBox msgBox;
-  msgBox.setText(res);
-  msgBox.exec();
 };
 
 }  // namespace s21
