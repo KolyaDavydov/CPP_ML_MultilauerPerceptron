@@ -26,7 +26,7 @@ class Neuron {
 
   void ClearFunction();
 
-//  private:
+  //  private:
   double value_{};
   int count_weight_;
   std::vector<double> array_weight_;

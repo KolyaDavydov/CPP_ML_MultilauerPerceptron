@@ -1,8 +1,8 @@
 #ifndef NEURAL_NETWORK_H
 #define NEURAL_NETWORK_H
 
-#include <vector>
 #include <cmath>
+#include <vector>
 
 #include "Eigen/Eigen"
 

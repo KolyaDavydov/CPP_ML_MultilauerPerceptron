@@ -14,10 +14,11 @@ NeuralNetwork::NeuralNetwork(vector<int> architecture, double learningRate) {
 }
 /**
  * @brief инициализирует нейронную сеть:
- * исходя из архитектуры заполняет вектора 
- * @param architecture список количества нейронов во входном слое, скрытых слоях и выходном
+ * исходя из архитектуры заполняет вектора
+ * @param architecture список количества нейронов во входном слое, скрытых слоях
+ * и выходном
  * @param learningRate скорость обучения
-*/
+ */
 void NeuralNetwork::init(vector<int> architecture, double learningRate) {
   mArchitecture = architecture;
   mLearningRate = learningRate;
@@ -45,7 +46,8 @@ void NeuralNetwork::init(vector<int> architecture, double learningRate) {
         // размерность первой подматрицы 785 rows * 65 cols
         // размерность второй подматрицы 65  rows * 49 cols
         // размерность второй подматрицы 65  rows * 26!!! cols
-        // и все подматрицы весов заполняем случайными значениями, кроме последнего столбца (bias)
+        // и все подматрицы весов заполняем случайными значениями, кроме
+        // последнего столбца (bias)
         mWeights.push_back(
             new Matrix(architecture[i - 1] + 1, architecture[i] + 1));
         mWeights.back()->setRandom();
@@ -67,31 +69,34 @@ void NeuralNetwork::init(vector<int> architecture, double learningRate) {
  * @brief функция активации, сигмоидная функция
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
-*/
+ */
 double NeuralNetwork::Activation(double x) { return 1.0 / (1.0 + exp(-x)); }
 
 /**
  * @brief функция активации, сигмоидная функция
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
-*/
+ */
 double NeuralNetwork::ActivationDerivative(double x) { return x * (1.0 - x); }
 
 /**
  * @brief функция прямого распространения для вычисления нейронов
  * в скрытых слоях и в otput (26 нейронов)
- * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего слоя нейронов
+ * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего
+ * слоя нейронов
  * @param ссылка на вектор входных нейронов их 28*28+1
-*/
+ */
 void NeuralNetwork::Forward(RowVector& input) {
   // set first layer input
-  // заполняет первую подматрицу нейронов фактическим нормализованными значениями
+  // заполняет первую подматрицу нейронов фактическим нормализованными
+  // значениями
   mNeurons.front()->block(0, 0, 1, input.size()) = input;
   // propagate forward (vector multiplication)
   // заполняет подматрицы нейронов остальных слоев полсе входного
   // происходит это следующим образом:
-  // по сути это умножение подматрицы весов на подматрицу предыдущего слоя нейронов
-  // и потом к каждому полученному нейрону применение функции активации - сигмоида
+  // по сути это умножение подматрицы весов на подматрицу предыдущего слоя
+  // нейронов и потом к каждому полученному нейрону применение функции активации
+  // - сигмоида
   for (unsigned int i = 1; i < mArchitecture.size(); i++) {
     // copy values ingoring last neuron as it is a bias
     mNeurons[i]->block(0, 0, 1, mArchitecture[i]) =
@@ -139,7 +144,6 @@ void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
     } else {
       recall->coeffRef(row) = mConfusion->coeffRef(row, row) / rowSum;
     }
-    
   }
 
   // convert confusion to percentage
@@ -148,14 +152,12 @@ void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
     for (int col = 0; col < cols; col++)
       rowSum += mConfusion->coeffRef(row, col);
     if (rowSum == 0) {
-      for (int col = 0; col < cols; col++)
-        mConfusion->coeffRef(row, col) = 0;
+      for (int col = 0; col < cols; col++) mConfusion->coeffRef(row, col) = 0;
     } else {
       for (int col = 0; col < cols; col++)
         mConfusion->coeffRef(row, col) =
             mConfusion->coeffRef(row, col) * 100 / rowSum;
     }
-
   }
 }
 
@@ -165,7 +167,7 @@ void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
  * обновляет матрицу весов
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
-*/
+ */
 void NeuralNetwork::Backward(RowVector& output) {
   // calculate last layer errors
   *mErrors.back() = output - *mNeurons.back();
@@ -191,10 +193,10 @@ void NeuralNetwork::Backward(RowVector& output) {
  * строки датасета
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
-*/
+ */
 void NeuralNetwork::Train(RowVector& input, RowVector& output) {
-  Forward(input); // заполняем матрицу нейронов
-  Backward(output); // заполняем матрицу ошибок
+  Forward(input);    // заполняем матрицу нейронов
+  Backward(output);  // заполняем матрицу ошибок
 }
 
 // mean square error

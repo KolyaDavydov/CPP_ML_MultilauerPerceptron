@@ -2,19 +2,19 @@
 #define CPP7_MLP_1_SRC_MODEL_GRAPH_PERCEPTRON_H_
 
 #include <locale.h>
+
 #include "Eigen/Eigen"
 typedef Eigen::RowVectorXd RowVector;
 typedef Eigen::MatrixXd Matrix;
 using namespace std;
 
 #include <cmath>
-#include <vector>
-
-#include <iostream>
 #include <fstream>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 #define CMD_RESET "\x1b[0m"
 #define CMD_RED "\x1b[31;1m"
 #define CMD_GREEN "\x1b[32;1m"
@@ -29,21 +29,18 @@ namespace s21 {
 
 // class GraphPerceptron : public Common {
 class GraphPerceptron {
-
-
-
  public:
   // network learning rate
   double mLearningRate;
   // network layers architecture (input-hidden-output)
   vector<int> mArchitecture;
-    // confusion matrix
+  // confusion matrix
   Matrix* mConfusion;
-
 
   GraphPerceptron();
   ~GraphPerceptron();
-  GraphPerceptron(vector<int> architecture, double learningRate = LEARNING_RATE);
+  GraphPerceptron(vector<int> architecture,
+                  double learningRate = LEARNING_RATE);
   void init(vector<int> architecture, double learningRate = LEARNING_RATE);
 
   bool Load(const char* filename);
@@ -75,7 +72,7 @@ class GraphPerceptron {
 
   void WeightsCalculation(int l, int n, double delta_weight);
 
-    // get max output index
+  // get max output index
   int FindMaximum();
 
   double Mse();
@@ -89,7 +86,8 @@ class GraphPerceptron {
   // //_____________________Parse_File______________________//
   // void LoadValuesTrain(std::string const &filename_train);
   // void LoadValuesTest(std::string const &filename_test);
-  // // void SetStartValues(const char* filename_train, const char* filename_test);
+  // // void SetStartValues(const char* filename_train, const char*
+  // filename_test);
 
   // //________________________Train________________________//
   // void EpochTrain(int epoch, std::vector<double> *report_graph);
@@ -132,7 +130,6 @@ class GraphPerceptron {
   size_t count_layers_{};
   size_t number_out_layer_{};
   std::vector<Layer> layers_;
-
 };
 
 }  // namespace s21

@@ -76,5 +76,3 @@ void s21::Layer::ClearFunction() {
   count_neuron_ = 0;
   count_weight_neuron_ = 0;
 }
-
-

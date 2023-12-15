@@ -36,4 +36,3 @@ void s21::Neuron::ClearFunction() {
   // delta_weight_ = 0;
   error_ = 0;
 }
-

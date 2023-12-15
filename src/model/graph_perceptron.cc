@@ -8,15 +8,17 @@ GraphPerceptron::~GraphPerceptron() {
   if (mConfusion) delete mConfusion;
 }
 
-GraphPerceptron::GraphPerceptron(vector<int> architecture, double learningRate) {
+GraphPerceptron::GraphPerceptron(vector<int> architecture,
+                                 double learningRate) {
   init(architecture, learningRate);
 }
 /**
  * @brief инициализирует нейронную сеть:
- * исходя из архитектуры заполняет вектора 
- * @param architecture список количества нейронов во входном слое, скрытых слоях и выходном
+ * исходя из архитектуры заполняет вектора
+ * @param architecture список количества нейронов во входном слое, скрытых слоях
+ * и выходном
  * @param learningRate скорость обучения
-*/
+ */
 void GraphPerceptron::init(vector<int> architecture, double learningRate) {
   mArchitecture = architecture;
   mLearningRate = learningRate;
@@ -33,14 +35,16 @@ void GraphPerceptron::init(vector<int> architecture, double learningRate) {
     layers_[i].SetCountWeightNeuron(architecture[i - 1] + 1);
   }
   layers_[number_out_layer_].SetCountNeuron(architecture[number_out_layer_]);
-  layers_[number_out_layer_].SetCountWeightNeuron(architecture[number_out_layer_ - 1] + 1);
+  layers_[number_out_layer_].SetCountWeightNeuron(
+      architecture[number_out_layer_ - 1] + 1);
 
   // заполняем веса случайными значениями
   for (size_t i = 1; i < layers_.size(); i++) {
     for (size_t l = 0; l < layers_[i].layer_.size(); l++) {
       if (l < layers_[i].layer_.size() - 1) {
         for (size_t j = 0; j < layers_[i].layer_[l].array_weight_.size(); j++) {
-          layers_[i].layer_[l].array_weight_[j] = (0.001 * (std::rand() % 2001 - 1000));
+          layers_[i].layer_[l].array_weight_[j] =
+              (0.001 * (std::rand() % 2001 - 1000));
         }
       } else {
         for (size_t j = 0; j < layers_[i].layer_[l].array_weight_.size(); j++) {
@@ -119,7 +123,8 @@ bool GraphPerceptron::Save(const char* filename) {
       for (size_t i = 0; i < layers_[l].GetCountNeuron(); i++) {
         wts << setw(12) << layers_[l].layer_[i].array_weight_[n];
       }
-      if (n == layers_[l].layer_[0].count_weight_ - 1 && l != count_layers_ - 1) {
+      if (n == layers_[l].layer_[0].count_weight_ - 1 &&
+          l != count_layers_ - 1) {
         wts << "," << endl;
       } else {
         wts << endl;
@@ -142,21 +147,23 @@ bool GraphPerceptron::Save(const char* filename) {
  * строки датасета
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
-*/
+ */
 void GraphPerceptron::Train(RowVector& input, RowVector& output) {
-  Forward(input); // заполняем матрицу нейронов
-  Backward(output); // заполняем матрицу ошибок
+  Forward(input);    // заполняем матрицу нейронов
+  Backward(output);  // заполняем матрицу ошибок
 }
 
 /**
  * @brief функция прямого распространения для вычисления нейронов
  * в скрытых слоях и в otput (26 нейронов)
- * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего слоя нейронов
+ * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего
+ * слоя нейронов
  * @param ссылка на вектор входных нейронов их 28*28+1
-*/
+ */
 void GraphPerceptron::Forward(RowVector& input) {
   // set first layer input
-  // заполняет первую подматрицу нейронов фактическим нормализованными значениями
+  // заполняет первую подматрицу нейронов фактическим нормализованными
+  // значениями
   for (size_t i = 0; i < layers_[0].GetCountNeuron() - 1; i++) {
     layers_[0].layer_[i].SetValue(input[i]);
   }
@@ -165,12 +172,14 @@ void GraphPerceptron::Forward(RowVector& input) {
   // propagate forward (vector multiplication)
   // заполняет подматрицы нейронов остальных слоев полсе входного
   // происходит это следующим образом:
-  // по сути это умножение подматрицы весов на подматрицу предыдущего слоя нейронов
-  // и потом к каждому полученному нейрону применение функции активации - сигмоида
+  // по сути это умножение подматрицы весов на подматрицу предыдущего слоя
+  // нейронов и потом к каждому полученному нейрону применение функции активации
+  // - сигмоида
   for (unsigned int i = 1; i < mArchitecture.size(); i++) {
     // copy values ingoring last neuron as it is a bias
     for (size_t n = 0; n < layers_[i].GetCountNeuron(); n++) {
-        if (n == layers_[i].GetCountNeuron() - 1 && i != mArchitecture.size() - 1) break;
+      if (n == layers_[i].GetCountNeuron() - 1 && i != mArchitecture.size() - 1)
+        break;
       double sum = 0;
       for (size_t w = 0; w < layers_[i - 1].GetCountNeuron(); w++) {
         sum +=
@@ -185,7 +194,7 @@ void GraphPerceptron::Forward(RowVector& input) {
  * @brief функция активации, сигмоидная функция
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
-*/
+ */
 double GraphPerceptron::Activation(double x) { return 1.0 / (1.0 + exp(-x)); }
 
 /**
@@ -194,14 +203,13 @@ double GraphPerceptron::Activation(double x) { return 1.0 / (1.0 + exp(-x)); }
  * обновляет матрицу весов
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
-*/
+ */
 void GraphPerceptron::Backward(RowVector& output) {
-
   for (size_t l = number_out_layer_; l != 0; l--) {
     for (size_t n = 0; n < layers_[l].GetCountNeuron(); n++) {
       double error = 0;
       if (l == number_out_layer_) {
-          error = output[n] - layers_[l].layer_[n].GetValue();
+        error = output[n] - layers_[l].layer_[n].GetValue();
       } else {
         for (size_t arr = 0; arr < layers_[l + 1].GetCountNeuron(); arr++) {
           error += layers_[l + 1].layer_[arr].error_ *
@@ -216,8 +224,8 @@ void GraphPerceptron::Backward(RowVector& output) {
          row++) {
       for (size_t col = 0; col < layers_[i].GetCountNeuron(); col++) {
         layers_[i].layer_[col].array_weight_[row] +=
-          mLearningRate * layers_[i].layer_[col].error_ *
-          layers_[i-1].layer_[row].value_ *
+            mLearningRate * layers_[i].layer_[col].error_ *
+            layers_[i - 1].layer_[row].value_ *
             ActivationDerivative(layers_[i].layer_[col].value_);
       }
     }
@@ -228,7 +236,7 @@ void GraphPerceptron::Backward(RowVector& output) {
  * @brief функция активации, сигмоидная функция
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
-*/
+ */
 double GraphPerceptron::ActivationDerivative(double x) { return x * (1.0 - x); }
 
 void GraphPerceptron::WeightsCalculation(int l, int n, double delta_weight) {
@@ -269,11 +277,13 @@ void GraphPerceptron::Test(RowVector& input, RowVector& output) {
   Forward(input);
   // calculate last layer errors
   for (int i = 0; i < output.size(); i++) {
-    layers_[number_out_layer_].layer_[i].error_ = output[i] - layers_[number_out_layer_].layer_[i].GetValue();
+    layers_[number_out_layer_].layer_[i].error_ =
+        output[i] - layers_[number_out_layer_].layer_[i].GetValue();
   }
 }
 
-void GraphPerceptron::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
+void GraphPerceptron::ConfusionMatrix(RowVector*& precision,
+                                      RowVector*& recall) {
   int rows = (int)mConfusion->rows();
   int cols = (int)mConfusion->cols();
 
@@ -295,7 +305,6 @@ void GraphPerceptron::ConfusionMatrix(RowVector*& precision, RowVector*& recall)
     } else {
       recall->coeffRef(row) = mConfusion->coeffRef(row, row) / rowSum;
     }
-    
   }
 
   // convert confusion to percentage
@@ -304,14 +313,12 @@ void GraphPerceptron::ConfusionMatrix(RowVector*& precision, RowVector*& recall)
     for (int col = 0; col < cols; col++)
       rowSum += mConfusion->coeffRef(row, col);
     if (rowSum == 0) {
-      for (int col = 0; col < cols; col++)
-        mConfusion->coeffRef(row, col) = 0;
+      for (int col = 0; col < cols; col++) mConfusion->coeffRef(row, col) = 0;
     } else {
       for (int col = 0; col < cols; col++)
         mConfusion->coeffRef(row, col) =
             mConfusion->coeffRef(row, col) * 100 / rowSum;
     }
-
   }
 }
 

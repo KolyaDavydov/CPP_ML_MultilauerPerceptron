@@ -29,7 +29,7 @@ class Layer {
 
   void ClearFunction();
 
-//  private:
+  //  private:
   size_t count_neuron_;
   size_t count_weight_neuron_;
   std::vector<Neuron> layer_;

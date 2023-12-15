@@ -5,7 +5,6 @@
 
 #include "../controller/controller.h"
 
-
 TEST(Controller, noFile) {
   s21::Controller c = s21::Controller.openModel("asd");
   EXPECT_EQ(c.IsValid(), false);

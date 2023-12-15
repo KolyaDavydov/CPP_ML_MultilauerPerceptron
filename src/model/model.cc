@@ -121,9 +121,11 @@ bool MlpModel::SaveModel(std::string filename) {
 /**
  * @brief парсит строку из датасета
  * @param line строка датасета
- * @param desired указатель под каким номером буквы должна быть данная строка (первое число строки)
- * @param data вектор в числовом представлении строки датасета после нормализации (от 0 до 1)
-*/
+ * @param desired указатель под каким номером буквы должна быть данная строка
+ * (первое число строки)
+ * @param data вектор в числовом представлении строки датасета после
+ * нормализации (от 0 до 1)
+ */
 void MlpModel::ReadLetter(const std::string line, int *desired,
                           RowVector *&data) {
   int width = 28;

@@ -28,7 +28,7 @@ check:
 	cp ../materials/linters/.clang-format ./
 	clang-format -n */*.cc
 	clang-format -n */*.h
-	rm -rf .clang-format
+#	rm -rf .clang-format
 
 cppcheck:
 	cppcheck --enable=all --suppress=missingIncludeSystem *.c *.h

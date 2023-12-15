@@ -1,4 +1,5 @@
 #include "view.h"
+
 #include "ui_view.h"
 
 namespace s21 {
@@ -57,7 +58,7 @@ void MlpView::SetupCharts() {
 }
 
 void MlpView::PlotChart(std::vector<double> series_vec) {
-  QLineSeries* series = new QLineSeries();
+  QLineSeries *series = new QLineSeries();
   int i = 0;
   for (auto var : series_vec) {
     series->append(i, var);
