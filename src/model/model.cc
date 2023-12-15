@@ -32,7 +32,7 @@ bool MlpModel::GetModelValid() {
   return (is_graph_model_valid_ || is_matrix_model_valid_);
 }
 
-QString MlpModel::GetErrorMsg() { return error_msg_; }
+std::string MlpModel::GetErrorMsg() { return error_msg_; }
 
 void MlpModel::SetModelType(int model_type) { model_type_ = model_type; }
 
@@ -391,8 +391,9 @@ bool MlpModel::TestModel(int test_part) {
   } else if (test_part == 0) {
     error_msg_ = "Nothing to test, test part ==0";
   } else {
-    QElapsedTimer t;
-    t.start();
+    auto start_time = std::chrono::steady_clock::now();
+    // QElapsedTimer t;
+    // t.start();
     // для тестирования времени работы Part 2 (10, 100, 1000 раз)
     for (int i = 0; i < 1; ++i) {
       if (model_type_ == GRAPH_MODEL) {
@@ -404,7 +405,11 @@ bool MlpModel::TestModel(int test_part) {
       }
     }
     result = true;
-    test_results_.runtime = t.elapsed();
+    auto end_time = std::chrono::steady_clock::now();
+    auto timer = std::chrono::duration_cast<std::chrono::milliseconds>(
+        end_time - start_time);
+    test_results_.runtime = timer.count() / 1000.0;
+    // test_results_.runtime = t.elapsed();
     error_msg_ = "";
   }
   return result;

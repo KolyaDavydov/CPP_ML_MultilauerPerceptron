@@ -1,8 +1,7 @@
 #ifndef CPP7_MLP_1_SRC_MODEL_MODEL_H_
 #define CPP7_MLP_1_SRC_MODEL_MODEL_H_
 
-#include <QElapsedTimer>
-#include <QString>
+#include <chrono>
 #include <fstream>
 #include <random>
 #include <string>
@@ -31,7 +30,7 @@ class MlpModel {
   bool SaveModel(std::string filename);
 
   bool GetModelValid();
-  QString GetErrorMsg();
+  std::string GetErrorMsg();
   bool GetDatasetLoaded();
   bool GetTestDatasetLoaded();
   void SetModelType(int model_type);
@@ -67,7 +66,7 @@ class MlpModel {
   size_t dataset_size_;
   size_t test_dataset_size_;
   int model_type_ = 1;
-  QString error_msg_ = "";
+  std::string error_msg_ = "";
   NeuralNetwork matrix_net_{};
   GraphPerceptron graph_net_{};
   bool is_matrix_model_valid_ = false;

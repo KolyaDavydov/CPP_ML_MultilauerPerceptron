@@ -38,7 +38,7 @@ class MlpController {
 
   bool GetModelValid() { return model_->GetModelValid(); }
 
-  QString GetErrorMsg() { return model_->GetErrorMsg(); }
+  std::string GetErrorMsg() { return model_->GetErrorMsg(); }
 
   testResults TestModel(int test_part) {
     model_->TestModel(test_part);

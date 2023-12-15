@@ -6,8 +6,10 @@
 #include "../controller/controller.h"
 
 TEST(Controller, noFile) {
-  s21::Controller c = s21::Controller.openModel("asd");
-  EXPECT_EQ(c.IsValid(), false);
+  s21::MlpModel model;
+  s21::MlpController controller(&model);
+  controller.OpenModel("asd");
+  EXPECT_EQ(controller.GetModelValid(), false);
 }
 
 int main(int argc, char* argv[]) {

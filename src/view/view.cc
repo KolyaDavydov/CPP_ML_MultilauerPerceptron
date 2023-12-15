@@ -158,7 +158,7 @@ void MlpView::OpenBmp() {
         }
       }
       char recognizedletter = controller.RecognizeImage(letter.str());
-      error_msg_ = controller.GetErrorMsg();
+      error_msg_ = controller.GetErrorMsg().c_str();
       if (error_msg_ != "") {
         QMessageBox msgBox;
         msgBox.setText(error_msg_);
@@ -187,7 +187,7 @@ void MlpView::TrainModel() {
   int epoch = ui_->epoch_number->value();
   int hiden_layers = ui_->hiden_layers_number->value();
   controller.TrainModel(epoch, hiden_layers);
-  error_msg_ = controller.GetErrorMsg();
+  error_msg_ = controller.GetErrorMsg().c_str();
   if (error_msg_ != "") {
     QMessageBox msgBox;
     msgBox.setText(error_msg_);
@@ -213,7 +213,7 @@ void MlpView::TrainModel() {
 void MlpView::TestModel() {
   int test_part = ui_->test_part->value();
   testResults testRes = controller.TestModel(test_part);
-  error_msg_ = controller.GetErrorMsg();
+  error_msg_ = controller.GetErrorMsg().c_str();
   if (error_msg_ != "") {
     QMessageBox msgBox;
     msgBox.setText(error_msg_);
@@ -249,7 +249,7 @@ void MlpView::RecognizeImage() {
     }
   }
   char recognizedletter = controller.RecognizeImage(letter.str());
-  error_msg_ = controller.GetErrorMsg();
+  error_msg_ = controller.GetErrorMsg().c_str();
   if (error_msg_ != "") {
     QMessageBox msgBox;
     msgBox.setText(error_msg_);
@@ -272,7 +272,7 @@ void MlpView::CrossValidation() {
   // вектор куда сохраняются значения тестовых частей для k-групп
   std::vector<testResults> crossResultstest =
       controller.CrossValidation(k_value, epoch, hiden_layers);
-  error_msg_ = controller.GetErrorMsg();
+  error_msg_ = controller.GetErrorMsg().c_str();
   if (error_msg_ != "") {
     QMessageBox msgBox;
     msgBox.setText(error_msg_);
