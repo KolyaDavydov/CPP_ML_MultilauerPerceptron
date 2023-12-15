@@ -2,7 +2,11 @@
 #define VIEW_H
 
 #include <QFileDialog>
+#include <QLineSeries>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QTimer>
+#include <QtCharts>
 
 #include "../controller/controller.h"
 #include "paintscene.h"
@@ -31,14 +35,16 @@ class MlpView : public QMainWindow {
   void TestModel();
   void RecognizeImage();
   void ClearPaint();
+  void CrossValidation();
+  void SetModelType();
 
  private:
   Ui::MainWindow *ui_;
-  // MlpModel *model_;
+  QString error_msg_ = "";
   void SetupButtons();
   void SetupCharts();
-  void plotChart(std::vector<double> series_val);
-  void updateLabel();
+  void PlotChart(std::vector<double> series_val);
+  void UpdateLabel();
   paintScene *scene;  // Объявляем кастомную графическую сцену
 };
 }  // namespace s21

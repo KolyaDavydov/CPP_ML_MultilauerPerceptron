@@ -32,38 +32,38 @@ class NeuralNetwork {
   ~NeuralNetwork();
   NeuralNetwork(vector<int> architecture, double learningRate = LEARNING_RATE);
   void init(vector<int> architecture, double learningRate = LEARNING_RATE);
-  // load from file
-  bool load(const char* file);
+  // Load from file
+  bool Load(const char* file);
 
-  // save to file
-  bool save(const char* file);
+  // Save to file
+  bool Save(const char* file);
 
-  // data forward propagation
-  void forward(RowVector& input);
-  double activation(double x);
+  // data Forward propagation
+  void Forward(RowVector& input);
+  double Activation(double x);
 
-  // backward propagation of errors
-  void backward(RowVector& output);
-  double activationDerivative(double x);
+  // Backward propagation of errors
+  void Backward(RowVector& output);
+  double ActivationDerivative(double x);
 
-  // train the neural network given an input
-  void train(RowVector& input, RowVector& output);
+  // Train the neural network given an input
+  void Train(RowVector& input, RowVector& output);
 
-  // test the neural network given an input
-  void test(RowVector& input, RowVector& output);
+  // Test the neural network given an input
+  void Test(RowVector& input, RowVector& output);
 
-  void resetConfusion();
-  void evaluate(RowVector& output);
-  void confusionMatrix(RowVector*& precision, RowVector*& recall);
+  void ResetConfusion();
+  void Evaluate(RowVector& output);
+  void ConfusionMatrix(RowVector*& precision, RowVector*& recall);
 
   // get max output index
-  int vote(double& value);
-  int vote(RowVector& v, double& value);
+  int Vote(double& value);
+  int Vote(RowVector& v, double& value);
 
-  // get last layer output
-  double output(int col);
+  // get last layer Output
+  double Output(int col);
 
   // get output layer mean squere error
-  double mse();
+  double Mse();
 };
 #endif

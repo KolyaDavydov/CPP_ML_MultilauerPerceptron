@@ -68,14 +68,14 @@ void NeuralNetwork::init(vector<int> architecture, double learningRate) {
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
 */
-double NeuralNetwork::activation(double x) { return 1.0 / (1.0 + exp(-x)); }
+double NeuralNetwork::Activation(double x) { return 1.0 / (1.0 + exp(-x)); }
 
 /**
  * @brief функция активации, сигмоидная функция
  * @param принимает значение нейрона от 0 до 1!!!
  * необходима нормализация нейронов!!!!
 */
-double NeuralNetwork::activationDerivative(double x) { return x * (1.0 - x); }
+double NeuralNetwork::ActivationDerivative(double x) { return x * (1.0 - x); }
 
 /**
  * @brief функция прямого распространения для вычисления нейронов
@@ -83,7 +83,7 @@ double NeuralNetwork::activationDerivative(double x) { return x * (1.0 - x); }
  * 1) умножение подматрицы весов на подматрицу нейронов = подматрица следующего слоя нейронов
  * @param ссылка на вектор входных нейронов их 28*28+1
 */
-void NeuralNetwork::forward(RowVector& input) {
+void NeuralNetwork::Forward(RowVector& input) {
   // set first layer input
   // заполняет первую подматрицу нейронов фактическим нормализованными значениями
   mNeurons.front()->block(0, 0, 1, input.size()) = input;
@@ -98,26 +98,26 @@ void NeuralNetwork::forward(RowVector& input) {
         (*mNeurons[i - 1] * *mWeights[i - 1]).block(0, 0, 1, mArchitecture[i]);
     // apply activation function
     for (int col = 0; col < mArchitecture[i]; col++)
-      mNeurons[i]->coeffRef(col) = activation(mNeurons[i]->coeffRef(col));
+      mNeurons[i]->coeffRef(col) = Activation(mNeurons[i]->coeffRef(col));
   }
 }
 
-void NeuralNetwork::test(RowVector& input, RowVector& output) {
-  forward(input);
+void NeuralNetwork::Test(RowVector& input, RowVector& output) {
+  Forward(input);
   // calculate last layer errors
   *mErrors.back() = output - *mNeurons.back();
 }
 
-void NeuralNetwork::resetConfusion() {
+void NeuralNetwork::ResetConfusion() {
   if (mConfusion) mConfusion->setZero();
 }
 
-void NeuralNetwork::evaluate(RowVector& output) {
+void NeuralNetwork::Evaluate(RowVector& output) {
   double desired = 0, actual = 0;
-  mConfusion->coeffRef(vote(output, desired), vote(*mNeurons.back(), actual))++;
+  mConfusion->coeffRef(Vote(output, desired), Vote(*mNeurons.back(), actual))++;
 }
 
-void NeuralNetwork::confusionMatrix(RowVector*& precision, RowVector*& recall) {
+void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
   int rows = (int)mConfusion->rows();
   int cols = (int)mConfusion->cols();
 
@@ -166,7 +166,7 @@ void NeuralNetwork::confusionMatrix(RowVector*& precision, RowVector*& recall) {
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
 */
-void NeuralNetwork::backward(RowVector& output) {
+void NeuralNetwork::Backward(RowVector& output) {
   // calculate last layer errors
   *mErrors.back() = output - *mNeurons.back();
 
@@ -181,7 +181,7 @@ void NeuralNetwork::backward(RowVector& output) {
         mWeights[i]->coeffRef(row, col) +=
             mLearningRate * mErrors[i + 1]->coeffRef(col) *
             mNeurons[i]->coeffRef(row) *
-            activationDerivative(mNeurons[i + 1]->coeffRef(col));
+            ActivationDerivative(mNeurons[i + 1]->coeffRef(col));
 }
 
 /**
@@ -192,23 +192,23 @@ void NeuralNetwork::backward(RowVector& output) {
  * @param output указатель на вектор шаблон размером 26 (который заполнен 0,
  * кроме фактического числа (номера буквы) данной строки)
 */
-void NeuralNetwork::train(RowVector& input, RowVector& output) {
-  forward(input); // заполняем матрицу нейронов
-  backward(output); // заполняем матрицу ошибок
+void NeuralNetwork::Train(RowVector& input, RowVector& output) {
+  Forward(input); // заполняем матрицу нейронов
+  Backward(output); // заполняем матрицу ошибок
 }
 
 // mean square error
-double NeuralNetwork::mse() {
+double NeuralNetwork::Mse() {
   return sqrt((*mErrors.back()).dot((*mErrors.back())) /
               mErrors.back()->size());
 }
 
-int NeuralNetwork::vote(double& value) {
+int NeuralNetwork::Vote(double& value) {
   auto it = mNeurons.back();
-  return vote(*it, value);
+  return Vote(*it, value);
 }
 
-int NeuralNetwork::vote(RowVector& v, double& value) {
+int NeuralNetwork::Vote(RowVector& v, double& value) {
   int index = 0;
   for (int i = 1; i < v.cols(); i++)
     if (v[i] > v[index]) index = i;
@@ -216,12 +216,12 @@ int NeuralNetwork::vote(RowVector& v, double& value) {
   return index;
 }
 
-double NeuralNetwork::output(int col) {
+double NeuralNetwork::Output(int col) {
   auto it = mNeurons.back();
   return (*it)[col];
 }
 
-bool NeuralNetwork::save(const char* filename) {
+bool NeuralNetwork::Save(const char* filename) {
   stringstream tplgy;
   for (auto it = mArchitecture.begin(), _end = mArchitecture.end(); it != _end;
        it++)
@@ -239,7 +239,7 @@ bool NeuralNetwork::save(const char* filename) {
   return true;
 }
 
-bool NeuralNetwork::load(const char* filename) {
+bool NeuralNetwork::Load(const char* filename) {
   mArchitecture.clear();
 
   ifstream file(filename);

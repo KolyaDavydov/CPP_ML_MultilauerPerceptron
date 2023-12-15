@@ -15,6 +15,9 @@ CONFIG += \
 
 SOURCES += \
     ../model/model.cc \
+    ../model/graph_neuron.cc \
+    ../model/graph_layer.cc \
+    ../model/graph_perceptron.cc \
     ../model/neural_network.cc \
     main.cc \
     paintscene.cc \
@@ -22,7 +25,11 @@ SOURCES += \
 
 HEADERS += \
     ../model/model.h \
+    ../model/graph_neuron.h \
+    ../model/graph_layer.h \
+    ../model/graph_perceptron.h \
     ../controller/controller.h \
+    ../model/neural_network.h \
     ../model/neural_network.h \
     paintscene.h \
     view.h

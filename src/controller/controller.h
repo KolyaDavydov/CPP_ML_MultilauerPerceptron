@@ -8,38 +8,49 @@ class MlpController {
  public:
   MlpController(MlpModel *m) : model_(m){};
 
-  bool openModel(std::string filename) {
-    model_->openModel(filename);
-    return model_->getModelValid();
+  void SetModelType(int model_type) { model_->SetModelType(model_type); }
+
+  bool OpenModel(std::string filename) {
+    model_->OpenModel(filename);
+    return model_->GetModelValid();
   }
 
-  bool openDataset(std::string filename) {
-    model_->openDataset(filename);
-    return model_->getDatasetLoaded();
+  bool OpenDataset(std::string filename) {
+    model_->OpenDataset(filename);
+    return model_->GetDatasetLoaded();
   }
 
-  bool openTestDataset(std::string filename) {
-    model_->openTestDataset(filename);
-    return model_->getTestDatasetLoaded();
+  bool OpenTestDataset(std::string filename) {
+    model_->OpenTestDataset(filename);
+    return model_->GetTestDatasetLoaded();
   }
 
-  bool saveModel(std::string filename) { return model_->saveModel(filename); }
+  bool SaveModel(std::string filename) { return model_->SaveModel(filename); }
 
-  bool trainModel(int model_type, int epoch, int hiden_layers) {
-    return model_->trainModel(model_type, epoch, hiden_layers);
+  void TrainModel(int epoch, int hiden_layers) {
+    model_->TrainModel(epoch, hiden_layers);
   }
 
-  char recognizeImage(std::string letter) {
-    model_->recognizeImage(letter);
-    return model_->getRecognized();
+  char RecognizeImage(std::string letter) {
+    model_->RecognizeImage(letter);
+    return model_->GetRecognized();
   }
 
-  testResults testModel(int test_part) {
-    model_->testModel(test_part);
-    return model_->getTestResults();
+  bool GetModelValid() { return model_->GetModelValid(); }
+
+  QString GetErrorMsg() { return model_->GetErrorMsg(); }
+
+  testResults TestModel(int test_part) {
+    model_->TestModel(test_part);
+    return model_->GetTestResults();
   }
 
-  std::vector<double> getTrainErrors() { return model_->getTrainErrors(); };
+  std::vector<double> GetTrainErrors() { return model_->GetTrainErrors(); };
+
+  std::vector<testResults> CrossValidation(int k_value, int epoch,
+                                           int hiden_layers) {
+    return model_->CrossValidation(k_value, epoch, hiden_layers);
+  }
 
  private:
   MlpModel *model_;
