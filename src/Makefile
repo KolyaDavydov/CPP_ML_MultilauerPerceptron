@@ -1,7 +1,17 @@
 CC=					g++ 
 CFLAGS=				-Wall -Werror -Wextra -std=c++17
 GCOVFLAGS=			-fprofile-arcs -ftest-coverage
-SOURSES=			controller/controller.h model/model.cc
+SOURSES=	./controller/controller.h \
+	./model/graph_layer.cc \
+	./model/graph_layer.h \
+	./model/graph_neuron.cc \
+	./model/graph_neuron.h \
+	./model/graph_perceptron.cc \
+	./model/graph_perceptron.h \
+	./model/model.cc \
+	./model/model.h \
+	./model/neural_network.cc \
+	./model/neural_network.h
 OBJECT=			$(patsubst %*.cc, %*.o, $(SOURSES))
 SOURSES_TEST=		test/test.cc
 VALGRIND_FLAGS = 	--trace-children=yes --track-fds=yes --track-origins=yes --leak-check=full --show-leak-kinds=all --verbose
@@ -48,7 +58,7 @@ endif
 	@rm -f *.o
 
 tests: clean test/test.cc controller.a
-	$(CC) $(CFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) -lgcov --coverage
+	$(CC) $(CFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) #-lgcov --coverage
 	./run
 
 gcov_report: tests
