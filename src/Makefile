@@ -1,5 +1,6 @@
 CC=					g++ 
 CFLAGS=				-Wall -Werror -Wextra -std=c++17
+CTESTFLAGS=			-std=c++17
 GCOVFLAGS=			-fprofile-arcs -ftest-coverage
 SOURSES=	./controller/controller.h \
 	./model/graph_layer.cc \
@@ -52,13 +53,13 @@ open: build
 
 controller.a: $(OBJECT)
 ifeq ($(OS), Darwin)
-	$(CC) $(CFLAGS) -c $(SOURSES)
+	$(CC) $(CTESTFLAGS) -c $(SOURSES)
 endif
 	ar -rcs controller.a $(OBJECT)
 	@rm -f *.o
 
 tests: clean test/test.cc controller.a
-	$(CC) $(CFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) -lgcov --coverage
+	$(CC) $(CTESTFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) -lgcov --coverage
 	./run
 
 gcov_report: tests
@@ -80,6 +81,7 @@ clean:
 			*.gcda \
 			*.info \
 			model/*.o \
+			model/*.gch \
 			*.txt \
 			../perceptron \
 			../perceptron.tar \
@@ -117,4 +119,3 @@ ifeq ($(OS), Darwin)
 	hdiutil create -volname "Perceptron" -srcfolder ./build/Perceptron.app -ov -format UDRW perceptron.dmg
 	mv perceptron.dmg $(HOME)/Desktop/
 endif
-
