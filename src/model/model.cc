@@ -16,11 +16,8 @@ void MlpModel::OpenModel(std::string filename) {
   is_graph_model_valid_ = is_matrix_model_valid_ = false;
   file_.open(filename);
   if (file_.is_open()) {
-    // if (model_type_ == GRAPH_MODEL) {
     is_graph_model_valid_ = graph_net_.Load(filename.c_str());
-    // } else {
     is_matrix_model_valid_ = matrix_net_.Load(filename.c_str());
-    // }
   }
 };
 
@@ -154,15 +151,9 @@ void MlpModel::ReadLetter(const std::string line, int *desired,
  */
 bool MlpModel::Train(NeuralNetwork &net, std::string line, int serial,
                      bool testing) {
-  RowVector *input;  // указатель на вектор где хранятся числовые значение
-                     // входных нейронов
-  int desired;  // фактическое значение (номер буквы) текущей строки (первое
-                // число строки)
+  RowVector *input;
+  int desired;
   ReadLetter(line, &desired, input);
-
-  // создаем вектор-шаблон длиной 26 (количество букв)
-  // который заподняем нулями, кроме элемента находящегося под индексом
-  // фактического значения
   RowVector output(LETTERS);
   for (int c = 0; c < LETTERS; c++)
     output.coeffRef(0, c) = c == desired ? 1 : 0;
@@ -188,8 +179,8 @@ bool MlpModel::Train(NeuralNetwork &net, std::string line, int serial,
 
 void MlpModel::Train(NeuralNetwork &net, int epoch) {
   double cost = 0;
-  int serial = 0;   // номер строки датасета (буквы)
-  int success = 0;  // для каждой строки датасета (буквы) успешное определение
+  int serial = 0;
+  int success = 0;
   train_errors_.clear();
   for (int trial = 0; trial < epoch; trial++) {
     serial = 0;
@@ -233,13 +224,11 @@ void MlpModel::Evaluate(NeuralNetwork &net) {
   RowVector *precision, *recall;
   net.ConfusionMatrix(precision, recall);
 
-  int numValues = 0;  // количество букв в тестах (может быть не равно 26)
+  int numValues = 0;
   for (int i = 0; i < precision->size(); i++) {
     if (precision->coeffRef(i) != 0) numValues++;
   }
 
-  // double precisionVal = precision->sum() / precision->cols();
-  // double recallVal = recall->sum() / recall->cols();
   double precisionVal = precision->sum() / numValues;
   double recallVal = recall->sum() / numValues;
   double f1score = 2 * precisionVal * recallVal / (precisionVal + recallVal);
@@ -268,15 +257,9 @@ void MlpModel::Evaluate(NeuralNetwork &net) {
  */
 bool MlpModel::Train(GraphPerceptron &net, std::string line, int serial,
                      bool testing) {
-  RowVector *input;  // указатель на вектор где хранятся числовые значение
-                     // входных нейронов
-  int desired;  // фактическое значение (номер буквы) текущей строки (первое
-                // число строки)
+  RowVector *input;
+  int desired;
   ReadLetter(line, &desired, input);
-
-  // создаем вектор-шаблон длиной 26 (количество букв)
-  // который заподняем нулями, кроме элемента находящегося под индексом
-  // фактического значения
   RowVector output(LETTERS);
   for (int c = 0; c < LETTERS; c++)
     output.coeffRef(0, c) = c == desired ? 1 : 0;
@@ -287,8 +270,6 @@ bool MlpModel::Train(GraphPerceptron &net, std::string line, int serial,
   } else
     net.Train(*input, output);
   delete input;
-
-  // double value = 0;
   int actual = net.FindMaximum();
   cout << serial << ' ' << char(desired + 65) << " >> ";
   if (desired != actual)
@@ -300,17 +281,12 @@ bool MlpModel::Train(GraphPerceptron &net, std::string line, int serial,
 }
 
 void MlpModel::RecognizeImage(std::string letter) {
-  RowVector *input;  // указатель на вектор где хранятся числовые значение
-                     // входных нейронов
-  int desired;  // фактическое значение (номер буквы) текущей строки (первое
-                // число строки)
+  RowVector *input;
+  int desired;
   ReadLetter(letter, &desired, input);
   if (!is_matrix_model_valid_ && !is_graph_model_valid_) {
     error_msg_ = "Model not loaded";
   } else {
-    // создаем вектор-шаблон длиной 26 (количество букв)
-    // который заподняем нулями, кроме элемента находящегося под индексом
-    // фактического значения
     RowVector output(LETTERS);
     for (int c = 0; c < LETTERS; c++)
       output.coeffRef(0, c) = c == desired ? 1 : 0;
@@ -365,9 +341,6 @@ void MlpModel::TrainModel(int epoch, int hiden_layers) {
     }
     if (model_type_ == GRAPH_MODEL) {
       graph_net_.init(init_vector, 0.05);
-      // 28 * 28, 64, 48, 26}, 0.03  2 - 76%  3 - 73% 4 - 73%
-      // 28 * 28, 64, 52, 48, 26}, 0.01  3 - 68%
-      // 28 * 28, 72, 64, 52, 48, 26}, 0.01 - 31%
       Train(graph_net_, epoch);
     } else {
       matrix_net_.init(init_vector, 0.05);
@@ -392,8 +365,6 @@ bool MlpModel::TestModel(int test_part) {
     error_msg_ = "Nothing to test, test part ==0";
   } else {
     auto start_time = std::chrono::steady_clock::now();
-    // QElapsedTimer t;
-    // t.start();
     // для тестирования времени работы Part 2 (10, 100, 1000 раз)
     for (int i = 0; i < 1; ++i) {
       if (model_type_ == GRAPH_MODEL) {
@@ -409,7 +380,6 @@ bool MlpModel::TestModel(int test_part) {
     auto timer = std::chrono::duration_cast<std::chrono::milliseconds>(
         end_time - start_time);
     test_results_.runtime = timer.count() / 1000.0;
-    // test_results_.runtime = t.elapsed();
     error_msg_ = "";
   }
   return result;
@@ -422,10 +392,9 @@ bool MlpModel::TestModel(int test_part) {
  */
 void MlpModel::Train(GraphPerceptron &net, int epoch) {
   double cost = 0;
-  int serial = 0;   // номер строки датасета (буквы)
-  int success = 0;  // для каждой строки датасета (буквы) успешное определение
+  int serial = 0;
+  int success = 0;
   train_errors_.clear();
-  // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
     serial = 0;
     success = 0;
@@ -450,7 +419,7 @@ void MlpModel::Train(GraphPerceptron &net, int epoch) {
 /**
  * @brief тестирование тестового датасета на обученой модели
  * @param net указатель на нейросеть
- * @param @param test_part (0-100) процент датасета который хотим протетсить
+ * @param test_part (0-100) процент датасета который хотим протетсить
  */
 void MlpModel::Test(GraphPerceptron &net, int test_part) {
   double cost = 0;
@@ -477,7 +446,7 @@ void MlpModel::Evaluate(GraphPerceptron &net) {
   RowVector *precision, *recall;
   net.ConfusionMatrix(precision, recall);
 
-  int numValues = 0;  // количество букв в тестах (может быть не равно 26)
+  int numValues = 0;
   for (int i = 0; i < precision->size(); i++) {
     if (precision->coeffRef(i) != 0) numValues++;
   }
@@ -501,44 +470,18 @@ void MlpModel::Evaluate(GraphPerceptron &net) {
 
 /**
  * @brief для обучения исопльзуется кросс-валидация:
- * Сначала загружаем тренировочный датасет "Open Dataset", затем:
- * 1) делим загруженный датасет на k_value одинковых частей (при этом эти части
- * не пересекаются) минимум делим датасет на 5 частей. 2) 1 часть из всех будет
- * тестовым датасетом, остальные части помещаем в тестовый датасет 3) Всего
- * будет k_value итераций "обучение - тестирование" в первой итерации тестовым
- * датасетом будет первая часть, остальные треноровочным в следующей итерации
- * тестовым датасетом будет вторая часть, остальные тренировочными и так далее
- * пока тестовым датасетом не станет последняя часть.
- *
- * Для наглядности возьмем исходный датасет из 88 800 элементов и k_value = 5.
- * исходный датасет разделиться на 5 равных частей по 17 760 элементов
- * Таким образом в тестовой выборке будет 17 760 элементов,
- * а в тренировочной 71 040 элементов, причем они не пересекаются
- *
- * В каждой итерации происходит следующее:
- * 3.1)
- *    - происходит обучение на тренировочном датасете из 71 040 элементов
- *    - после обучения веса сохраняются во временный tmp_model.txt файл
- *    - загружаются веса из tmp_model.txt файла
- *    - на загруженной модели происходит тестирование на тестовом датасете из 17
- * 760 элементов
- *    - полученые показатели тестов сохраняются в вектор results
- *    - сравнивается показатель accuracy с показателем на предыдущей итерацией
- * или 0 и если точность после текущей иттерации выше, то эту модель становится
- * основной и когда все иттерации прошли после нажатии кнопки 'Save Model"
- * сохранится имено та модель accuracy которой выше
+ * @param  k_value части датасета
+ * @param epoch количество эпох
+ * @param hiden_layers количество скрытых слоев
  */
 std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
                                                    int hiden_layers) {
-  // вектор для хранения результатов тестов для всех иттераций
   std::vector<testResults> results;
-  // выбираем архитектуру для кросс-валидации так же как и при обычном
-  // обучении
   vector<int> init_vector{};
   if (!is_dataset_loaded_) {
     error_msg_ = "Dataset not loaded";
   } else {
-    switch (hiden_layers) {  // количество нейронов подобрано эмпирически
+    switch (hiden_layers) {
       case 2:
         init_vector = {28 * 28, 64, 48, LETTERS};
         break;
@@ -554,11 +497,7 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
       default:
         init_vector = {28 * 28, 64, 48, LETTERS};
     }
-    // создаем вектор содержащий объекты перцептронов в количестве = k_value
-    // и каждый объект инициализируем соответствующей архитектурой
-    std::vector<GraphPerceptron> graph_parts(
-        k_value);  // будет храниться несколько объектов перцептронов в
-                   // количестве k_value
+    std::vector<GraphPerceptron> graph_parts(k_value);
     std::vector<NeuralNetwork> matrix_parts(k_value);
     for (int i = 0; i < k_value; ++i) {
       if (model_type_ == GRAPH_MODEL) {
@@ -567,15 +506,10 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
         matrix_parts[i].init(init_vector, 0.01);
       }
     }
-    // перемешиваем исходный датасет
     std::default_random_engine rng_{};
     std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
-    // исходный датасет разбиваем на k_value не пересекающихся частей
-    // и каждая часть будет находится в векторе datasets
     std::vector<std::vector<std::string>> datasets(k_value);
-    int part_size = (int)(dataset_size_ / k_value);  // размер части датасета
-
-    // процесс разбиения исходного датасета и помещения каждой части в datasets
+    int part_size = (int)(dataset_size_ / k_value);
     auto iter_begin = dataset_.begin();
     auto iter_end = dataset_.begin() + part_size;
     for (int i = 0; i < k_value; i++) {
@@ -584,45 +518,34 @@ std::vector<testResults> MlpModel::CrossValidation(int k_value, int epoch,
       iter_end = iter_begin + part_size;
     }
 
-    double accuray_k = 0.0;  // Будет хранить показатель точности для каждой
-                             // итерации и сравниваться с предыдущей
-    const char *tmp_model = "tmp_model.txt";  // для временного хранения модели
+    double accuray_k = 0.0;
+    const char *tmp_model = "tmp_model.txt";
     for (int i = 0; i < k_value; i++) {
-      // при каждой иттерации мы как бы обновляем значения параметров текущего
-      // класса
       this->dataset_.clear();
       this->test_dataset_.clear();
-
-      // создаем тестовый датасет - одна часть из набора
       this->test_dataset_ = datasets[i];
-      // создаем тренировочный датасет - остальные части кроме одной,
       auto iter = this->dataset_.cbegin();
       for (int j = 0; j < k_value; ++j) {
         if (j != i) {
           dataset_.insert(iter, datasets[j].begin(), datasets[j].end());
         }
       }
-
-      // Обновляем размеры текущих датасетов
       dataset_size_ = dataset_.size();
       test_dataset_size_ = test_dataset_.size();
       if (model_type_ == GRAPH_MODEL) {
-        Train(graph_parts[i], epoch);  // обучение
-        graph_parts[i].Save(tmp_model);  // сохранение модели в временный файл
-        graph_parts[i].Load(tmp_model);  // загрузка модели из временного файла
-        Test(graph_parts[i], 100);  // тестирвоание на загруженной модели
-        Evaluate(graph_parts[i]);  // определение метрик после тестов
+        Train(graph_parts[i], epoch);
+        graph_parts[i].Save(tmp_model);
+        graph_parts[i].Load(tmp_model);
+        Test(graph_parts[i], 100);
+        Evaluate(graph_parts[i]);
       } else {
-        Train(matrix_parts[i], epoch);  // обучение
-        matrix_parts[i].Save(tmp_model);  // сохранение модели в временный файл
-        matrix_parts[i].Load(tmp_model);  // загрузка модели из временного файла
-        Test(matrix_parts[i], 100);  // тестирвоание на загруженной модели
-        Evaluate(matrix_parts[i]);  // определение метрик после тестов
+        Train(matrix_parts[i], epoch);
+        matrix_parts[i].Save(tmp_model);
+        matrix_parts[i].Load(tmp_model);
+        Test(matrix_parts[i], 100);
+        Evaluate(matrix_parts[i]);
       }
-      results.push_back(
-          this->test_results_);  // запихиваем полученные метрики в вектор
-      // сравниваем метрику accuracy c предыдущей иттерацией
-      // если она выше, то как бы загружаем модель в основной перцептрон (net_)
+      results.push_back(this->test_results_);
       if (results[i].accuracy > accuray_k) {
         if (model_type_ == GRAPH_MODEL) {
           graph_net_.Load(tmp_model);

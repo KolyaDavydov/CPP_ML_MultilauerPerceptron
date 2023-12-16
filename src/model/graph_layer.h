@@ -9,8 +9,6 @@ class Layer {
  public:
   Layer();
   int FindMaximum();
-  // void PrintLayer();
-
   void SetCountNeuron(int count_neuron);
   void SetCountWeightNeuron(int count_weight_neuron);
   void SetWeightsNeuron();
@@ -18,18 +16,12 @@ class Layer {
   void SetNeuronError(int index, double error);
   void SetNeuronWeights(int index, int index_weight, double weight);
   void SetErrorCalculation(int index, double error);
-  // void SetNeuronDeltaWeight(int index, double delta_weight);
-
   size_t GetCountNeuron();
   double GetNeuronValue(int index);
   double GetNeuronError(int index);
-  // double GetNeuronDelta(int index);
   double GetNeuronExpectedValue(int index);
   double GetWeightNeuron(int index, int weight_index);
-
   void ClearFunction();
-
-  //  private:
   size_t count_neuron_;
   size_t count_weight_neuron_;
   std::vector<Neuron> layer_;

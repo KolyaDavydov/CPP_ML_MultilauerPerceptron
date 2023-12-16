@@ -1,5 +1,5 @@
-#ifndef VIEW_H
-#define VIEW_H
+#ifndef CPP7_MLP_1_SRC_VIEW_VIEW_H
+#define CPP7_MLP_1_SRC_VIEW_VIEW_H
 
 #include <QFileDialog>
 #include <QLineSeries>
@@ -49,4 +49,4 @@ class MlpView : public QMainWindow {
 };
 }  // namespace s21
 
-#endif  // VIEW_H
+#endif  // CPP7_MLP_1_SRC_VIEW_VIEW_H

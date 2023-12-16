@@ -47,10 +47,6 @@ void s21::Layer::SetErrorCalculation(int index, double error) {
   layer_[index].SetError(error);
 }
 
-// void s21::Layer::SetNeuronDeltaWeight(int index, double delta_weight) {
-//   layer_[index].SetDeltaWeight(delta_weight);
-// }
-
 size_t s21::Layer::GetCountNeuron() { return count_neuron_; }
 
 double s21::Layer::GetNeuronValue(int index) {
@@ -60,10 +56,6 @@ double s21::Layer::GetNeuronValue(int index) {
 double s21::Layer::GetNeuronError(int index) {
   return layer_[index].GetError();
 }
-
-// double s21::Layer::GetNeuronDelta(int index) {
-//   return layer_[index].GetNeuronDelta();
-// }
 
 double s21::Layer::GetWeightNeuron(int index, int weight_index) {
   return layer_[index].GetWeightVector(weight_index);

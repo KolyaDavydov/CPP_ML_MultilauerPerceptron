@@ -1,5 +1,5 @@
-#ifndef PAINTSCENE_H
-#define PAINTSCENE_H
+#ifndef CPP7_MLP_1_SRC_VIEW_PAINTSCENE_H
+#define CPP7_MLP_1_SRC_VIEW_PAINTSCENE_H
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -14,12 +14,11 @@ class paintScene : public QGraphicsScene {
   ~paintScene();
 
  private:
-  QPointF previousPoint;  // Координаты предыдущей точки
+  QPointF previousPoint;
 
  private:
-  // Для рисования используем события мыши
   void mousePressEvent(QGraphicsSceneMouseEvent *event);
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 };
 
-#endif  // PAINTSCENE_H
+#endif  // CPP7_MLP_1_SRC_VIEW_PAINTSCENE_H

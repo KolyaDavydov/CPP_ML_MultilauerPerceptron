@@ -28,26 +28,16 @@ void NeuralNetwork::init(vector<int> architecture, double learningRate) {
   mWeights.clear();
 
   for (unsigned int i = 0; i < architecture.size(); i++) {
-    // add extra neuron to each layer as a bias (with weight = 1)
-    // Добавляем дополнительный нейрон к каждому слою кроме последнего
     int size = architecture[i] + (i != architecture.size() - 1);
     mNeurons.push_back(new RowVector(size));
     mErrors.push_back(new RowVector(size));
 
     mNeurons.back()->setZero();
     if (i < architecture.size() - 1)
-      // set bias to 1 (used in vectors dot product)
       mNeurons.back()->coeffRef(architecture[i]) = 1.0;
 
-    // initialize weights
     if (i > 0) {
       if (i != architecture.size() - 1) {
-        // для архитектуры 784, 64, 48, 26 в матрице весов будет 3 подматрицы
-        // размерность первой подматрицы 785 rows * 65 cols
-        // размерность второй подматрицы 65  rows * 49 cols
-        // размерность второй подматрицы 65  rows * 26!!! cols
-        // и все подматрицы весов заполняем случайными значениями, кроме
-        // последнего столбца (bias)
         mWeights.push_back(
             new Matrix(architecture[i - 1] + 1, architecture[i] + 1));
         mWeights.back()->setRandom();
@@ -60,7 +50,6 @@ void NeuralNetwork::init(vector<int> architecture, double learningRate) {
       }
     }
   }
-  // задаем размер матрицы для оценки точности 26*26 и заполняем нулями
   mConfusion = new Matrix(architecture.back(), architecture.back());
   mConfusion->setZero();
 }
@@ -87,21 +76,10 @@ double NeuralNetwork::ActivationDerivative(double x) { return x * (1.0 - x); }
  * @param ссылка на вектор входных нейронов их 28*28+1
  */
 void NeuralNetwork::Forward(RowVector& input) {
-  // set first layer input
-  // заполняет первую подматрицу нейронов фактическим нормализованными
-  // значениями
   mNeurons.front()->block(0, 0, 1, input.size()) = input;
-  // propagate forward (vector multiplication)
-  // заполняет подматрицы нейронов остальных слоев полсе входного
-  // происходит это следующим образом:
-  // по сути это умножение подматрицы весов на подматрицу предыдущего слоя
-  // нейронов и потом к каждому полученному нейрону применение функции активации
-  // - сигмоида
   for (unsigned int i = 1; i < mArchitecture.size(); i++) {
-    // copy values ingoring last neuron as it is a bias
     mNeurons[i]->block(0, 0, 1, mArchitecture[i]) =
         (*mNeurons[i - 1] * *mWeights[i - 1]).block(0, 0, 1, mArchitecture[i]);
-    // apply activation function
     for (int col = 0; col < mArchitecture[i]; col++)
       mNeurons[i]->coeffRef(col) = Activation(mNeurons[i]->coeffRef(col));
   }
@@ -109,7 +87,6 @@ void NeuralNetwork::Forward(RowVector& input) {
 
 void NeuralNetwork::Test(RowVector& input, RowVector& output) {
   Forward(input);
-  // calculate last layer errors
   *mErrors.back() = output - *mNeurons.back();
 }
 
@@ -146,7 +123,6 @@ void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
     }
   }
 
-  // convert confusion to percentage
   for (int row = 0; row < rows; row++) {
     double rowSum = 0;
     for (int col = 0; col < cols; col++)
@@ -169,14 +145,10 @@ void NeuralNetwork::ConfusionMatrix(RowVector*& precision, RowVector*& recall) {
  * кроме фактического числа (номера буквы) данной строки)
  */
 void NeuralNetwork::Backward(RowVector& output) {
-  // calculate last layer errors
   *mErrors.back() = output - *mNeurons.back();
-
-  // calculate hidden layers' errors (vector multiplication)
   for (size_t i = mErrors.size() - 2; i > 0; i--)
     *mErrors[i] = *mErrors[i + 1] * mWeights[i]->transpose();
 
-  // update weights
   for (size_t i = 0, size = mWeights.size(); i < size; i++)
     for (int row = 0, rows = (int)mWeights[i]->rows(); row < rows; row++)
       for (int col = 0, cols = (int)mWeights[i]->cols(); col < cols; col++)
@@ -195,11 +167,9 @@ void NeuralNetwork::Backward(RowVector& output) {
  * кроме фактического числа (номера буквы) данной строки)
  */
 void NeuralNetwork::Train(RowVector& input, RowVector& output) {
-  Forward(input);    // заполняем матрицу нейронов
-  Backward(output);  // заполняем матрицу ошибок
+  Forward(input);
+  Backward(output);
 }
-
-// mean square error
 double NeuralNetwork::Mse() {
   return sqrt((*mErrors.back()).dot((*mErrors.back())) /
               mErrors.back()->size());
@@ -249,24 +219,19 @@ bool NeuralNetwork::Load(const char* filename) {
   string line, name, value;
   if (!getline(file, line, '\n')) return false;
   stringstream lr(line);
-
-  // read learning rate
   getline(lr, name, ':');
   if (name != "learningRate") return false;
   if (!getline(lr, value, '\n')) return false;
   mLearningRate = atof(value.c_str());
 
-  // read topoplogy
   getline(file, line, '\n');
   stringstream ss(line);
   getline(ss, name, ':');
   if (name != "architecture") return false;
   while (getline(ss, value, ',')) mArchitecture.push_back(atoi(value.c_str()));
 
-  // initialize using read architecture
   init(mArchitecture, mLearningRate);
 
-  // read weights
   name = "";
   getline(file, line, '\n');
   stringstream we(line);
