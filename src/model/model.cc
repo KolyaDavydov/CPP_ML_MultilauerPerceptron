@@ -427,6 +427,10 @@ void MlpModel::Train(GraphPerceptron &net, int epoch) {
   train_errors_.clear();
   // tain three times for better accuracy
   for (int trial = 0; trial < epoch; trial++) {
+    serial = 0;
+    success = 0;
+    std::default_random_engine rng_{};
+    std::shuffle(std::begin(dataset_), std::end(dataset_), rng_);
     for (size_t n = 0; n < dataset_size_; n++) {
       if (Train(net, dataset_[n].c_str(), ++serial, false)) success++;
       cost += net.Mse();

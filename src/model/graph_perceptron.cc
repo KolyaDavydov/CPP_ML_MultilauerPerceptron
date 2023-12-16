@@ -331,12 +331,6 @@ void GraphPerceptron::Evaluate(RowVector& output) {
   mConfusion->coeffRef(Vote(output, desired), Vote(mNeurons, actual))++;
 }
 
-// int GraphPerceptron::vote(double& value) {
-//   RowVector mNeurons;
-//   auto it = mNeurons.back();
-//   return vote(*it, value);
-// }
-
 int GraphPerceptron::Vote(RowVector& v, double& value) {
   int index = 0;
   for (int i = 1; i < v.cols(); i++)

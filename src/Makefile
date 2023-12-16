@@ -58,7 +58,7 @@ endif
 	@rm -f *.o
 
 tests: clean test/test.cc controller.a
-	$(CC) $(CFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) #-lgcov --coverage
+	$(CC) $(CFLAGS) $(SOURSES_TEST) $(SOURSES) -o run $(CHECKFLAGS) -lgcov --coverage
 	./run
 
 gcov_report: tests
